@@ -6,6 +6,8 @@ from classes.staff import Staff
 class Dojo:
     def __init__(self):
         self.all_offices = []
+        self.office_allocations = {}
+        self.living_space_allocations = {}
         self.all_living_spaces = []
         self.all_fellows = []
         self.all_staff = []
@@ -20,45 +22,66 @@ class Dojo:
 
 
             if room_type == 'office':
-                office = Office(room_names)
-                self.all_offices.append(office)
+                for room_name in room_names:
+                    office = Office(room_name)
+                    self.all_offices.append(office)
             elif room_type == 'living_space':
-                living_space = LivingSpace(room_names)
-                self.all_living_spaces.append(living_space)
+                for room_name in room_names:
+                    living_space = LivingSpace(room_name)
+                    self.all_living_spaces.append(living_space)
             else:
                 return ('Invalid room type')
 
     def add_fellow(self, name, WANTS_ACCOMODATION = 'N'):
-        fellow = Fellow(name, WANTS_ACCOMODATION)
-        available_office = self.get_available_office()
-        if not available_office:
-            fellow = available_office.add_person(fellow)
-            self.all_fellows.append(fellow)
+        fellow = Fellow(name, WANTS_ACCOMODATION, None)
+        available_office_name = self.get_available_office()
+        if available_office_name:
+            if available_office_name in self.office_allocations:
+                fellows_list = self.office_allocations[available_office_name]
+                fellows_list.append(fellow.name)
+            else:
+                self.office_allocations[available_office_name] = [fellow.name]
+
 
         if(WANTS_ACCOMODATION == 'Y'):
-            fellow = Fellow(name, WANTS_ACCOMODATION)
-            available_living_place = self.get_available_living_spaces()
-            if not available_living_place:
-                fellow = available_living_place.add_person(fellow)
-                self.all_fellows.append(fellow)
+            fellow = Fellow(name, WANTS_ACCOMODATION, None)
+            available_living_place_name = self.get_available_living_spaces()
+            if available_living_place_name:
+                if available_living_place_name in self.living_space_allocations:
+                    fellows_list = self.living_space_allocations[available_living_place_name]
+                    fellows_list.append(fellow.name)
+                else:
+                    self.living_space_allocations[available_living_place_name] = [fellow.name]
+
+        self.all_fellows.append(fellow.name)
 
     def add_staff(self, name):
         staff = Staff(name)
         available_office = self.get_available_office()
         if not available_office:
             staff = available_office.add_person(staff)
-            self.all_fellows.append(staff)
+            self.all_fellows.append(staff.name)
 
     def get_available_office(self):
         for office in self.all_offices:
             if office.contains_space:
-                return office
+                return office.name
         return False
 
     def get_available_living_spaces(self):
         for living_spaces in self.all_living_spaces:
             if living_spaces.contains_space:
-                return living_spaces
+                return living_spaces.name
         return False
 
 
+dojo = Dojo()
+dojo.create_room(['name', 'name2'], 'office')
+dojo.create_room(['livingSpace1'], 'living_space')
+print(dojo.all_offices)
+
+dojo.add_fellow('Patrick','Y')
+dojo.add_fellow('Pat', 'Y')
+print(dojo.office_allocations)
+print(dojo.living_space_allocations)
+print(dojo.all_fellows)
