@@ -26,29 +26,35 @@ class TestClassDojo(unittest.TestCase):
     def test_create_room_with_wrong_argument_types(self):
         self.assertRaises(TypeError, self.dojo.create_room, 5, 9)
 
-    def test_create_fellow_successfully_with_room(self):
+    def test_create_fellow_successfully_without_accomodation_specified(self):
+        initial_fellow_count = len(self.dojo.all_fellows)
+        self.dojo.create_person('name', 'fellow')
+        new_fellow_count = len(self.dojo.all_fellows)
+        self.assertEqual(new_fellow_count - initial_fellow_count, 1)
+
+    def test_create_fellow_successfully_with_accomodation(self):
         initial_fellow_count = len(self.dojo.all_fellows)
         self.dojo.create_person('name', 'fellow', 'Y')
         new_fellow_count = len(self.dojo.all_fellows)
         self.assertEqual(new_fellow_count - initial_fellow_count, 1)
 
-    def test_create_fellow_successfully_without_room(self):
+    def test_create_fellow_successfully_without_accomodation(self):
         initial_fellow_count = len(self.dojo.all_fellows)
         self.dojo.create_person('name', 'fellow', 'N')
         new_fellow_count = len(self.dojo.all_fellows)
         self.assertEqual(new_fellow_count - initial_fellow_count, 1)
 
-    def test_create_staff_successfully_without_accomodation_parameter(self):
+    def test_create_staff_successfully_without_accomodation(self):
         initial_staff_count = len(self.dojo.all_staff)
         self.dojo.create_person('name', 'staff')
-        new_fellow_count = len(self.dojo.all_staff)
-        self.assertEqual(new_fellow_count - initial_staff_count, 1)
+        new_staff_count = len(self.dojo.all_staff)
+        self.assertEqual(new_staff_count - initial_staff_count, 1)
 
-    def test_create_staff_successfully(self):
+    def test_create_staff_with_accomodation(self):
         initial_staff_count = len(self.dojo.all_staff)
         self.dojo.create_person('name', 'staff', 'N')
         new_staff_count = len(self.dojo.all_staff)
-        self.assertEqual(new_staff_count - initial_staff_count, 1)
+        self.assertEqual(new_staff_count - initial_staff_count, 0)
 
     def test_create_person_with_empty_string(self):
         self.assertRaises(ValueError, self.dojo.create_person, "", "")
