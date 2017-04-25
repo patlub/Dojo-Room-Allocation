@@ -31,16 +31,34 @@ class Dojo:
     def add_fellow(self, name, WANTS_ACCOMODATION = 'N'):
         fellow = Fellow(name, WANTS_ACCOMODATION)
         available_office = self.get_available_office()
-        fellow = available_office.add_person(fellow)
-        self.all_fellows.append(fellow)
+        if not available_office:
+            fellow = available_office.add_person(fellow)
+            self.all_fellows.append(fellow)
 
+        if(WANTS_ACCOMODATION == 'Y'):
+            fellow = Fellow(name, WANTS_ACCOMODATION)
+            available_living_place = self.get_available_living_spaces()
+            if not available_living_place:
+                fellow = available_living_place.add_person(fellow)
+                self.all_fellows.append(fellow)
 
     def add_staff(self, name):
-        staff = Staff()
-        self.all_staff.append(staff)
+        staff = Staff(name)
+        available_office = self.get_available_office()
+        if not available_office:
+            staff = available_office.add_person(staff)
+            self.all_fellows.append(staff)
 
     def get_available_office(self):
         for office in self.all_offices:
             if office.contains_space:
                 return office
         return False
+
+    def get_available_living_spaces(self):
+        for living_spaces in self.all_living_spaces:
+            if living_spaces.contains_space:
+                return living_spaces
+        return False
+
+

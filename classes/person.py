@@ -1,4 +1,4 @@
 class Person:
-    def __init__(self, name, Office):
+    def __init__(self, name, office):
         self.name = name
-        self.office = Office
+        self.office = office

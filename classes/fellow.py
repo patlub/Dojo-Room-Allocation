@@ -1,5 +1,10 @@
-class Fellow:
-    def __init__(self, name, WANTS_ACCOMODATION):
+from classes.person import Person
+
+class Fellow(Person):
+    def __init__(self, name, WANTS_ACCOMODATION, office):
+        super().__init__(name, office)
         self.name = name
-        self.office = office
-        self.living_space = living_space
+        self.wants_accomodation = WANTS_ACCOMODATION
+        self.living_space = None
+
+
