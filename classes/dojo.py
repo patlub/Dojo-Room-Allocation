@@ -36,22 +36,22 @@ class Dojo:
         fellow = Fellow(name, WANTS_ACCOMODATION, None)
         available_office_name = self.get_available_office()
         if available_office_name:
-            if available_office_name in self.office_allocations:
-                fellows_list = self.office_allocations[available_office_name]
+            if available_office_name.name in self.office_allocations:
+                fellows_list = self.office_allocations[available_office_name.name]
                 fellows_list.append(fellow.name)
             else:
-                self.office_allocations[available_office_name] = [fellow.name]
+                self.office_allocations[available_office_name.name] = [fellow.name]
 
 
         if(WANTS_ACCOMODATION == 'Y'):
             fellow = Fellow(name, WANTS_ACCOMODATION, None)
             available_living_place_name = self.get_available_living_spaces()
             if available_living_place_name:
-                if available_living_place_name in self.living_space_allocations:
-                    fellows_list = self.living_space_allocations[available_living_place_name]
+                if available_living_place_name.name in self.living_space_allocations:
+                    fellows_list = self.living_space_allocations[available_living_place_name.name]
                     fellows_list.append(fellow.name)
                 else:
-                    self.living_space_allocations[available_living_place_name] = [fellow.name]
+                    self.living_space_allocations[available_living_place_name.name] = [fellow.name]
 
         self.all_fellows.append(fellow.name)
 
@@ -65,13 +65,13 @@ class Dojo:
     def get_available_office(self):
         for office in self.all_offices:
             if office.contains_space:
-                return office.name
+                return office
         return False
 
     def get_available_living_spaces(self):
         for living_spaces in self.all_living_spaces:
             if living_spaces.contains_space:
-                return living_spaces.name
+                return living_spaces
         return False
 
 
