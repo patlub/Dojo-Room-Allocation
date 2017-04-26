@@ -66,5 +66,10 @@ class TestClassDojo(unittest.TestCase):
     # def test_create_person_with_non_strings(self):
     #     self.assertRaises(ValueError, self.dojo.create_person, 5, 9)
 
+        def test_get_available_office(self):
+            self.dojo.add_fellow('Patrick', 'Y')
+            self.assertEqual()
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -8,4 +8,5 @@ class LivingSpace(Room):
 
 
     def contains_space(self):
-        return self.spaces != 0
+        if self.spaces > 0:
+            return True

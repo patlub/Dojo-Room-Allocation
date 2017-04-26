@@ -6,8 +6,8 @@ class Office(Room):
         super().__init__(name)
         self.name = name
 
-
     def contains_space(self):
-        return self.spaces != 0
+        if self.spaces > 0:
+            return True
 
 
