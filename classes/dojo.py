@@ -122,11 +122,17 @@ class Dojo:
                 for name in self.office_allocations[room_name]:
                     print(name)
 
+    def print_allocations(self):
+        for room_name in self.office_allocations:
+            print(room_name.upper())
+            print('---------------------------------------------')
+            print(", ".join(self.office_allocations[room_name]).upper())
+
 
 dojo = Dojo()
 dojo.create_room(['blue', 'orange'], 'office')
 dojo.create_room(['livingSpace1'], 'living_space')
-print(dojo.all_offices)
+# print(dojo.all_offices)
 
 dojo.add_fellow('Patrick','Y')
 dojo.add_fellow('Jim', 'Y')
@@ -137,6 +143,7 @@ dojo.add_fellow('Fred', 'Y')
 dojo.add_fellow('Samuel', 'Y')
 dojo.add_fellow('Dona', 'Y')
 print(dojo.office_allocations)
-print(dojo.living_space_allocations)
-print(dojo.all_fellows)
-dojo.print_room('blue')
+# print(dojo.living_space_allocations)
+# print(dojo.all_fellows)
+# dojo.print_room('blue')
+dojo.print_allocations()
