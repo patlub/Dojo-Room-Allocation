@@ -5,10 +5,12 @@ from classes.staff import Staff
 
 class Dojo:
     def __init__(self):
+
         self.all_offices = []
         self.office_allocations = {}
-        self.living_space_allocated = {}
-        self.fellow_not_allocated = []
+        self.living_space_allocations = {}
+        self.fellow_not_allocated_office = []
+        self.fellow_not_allocated_living_space = []
         self.staff_not_allocated = []
         self.all_living_spaces = []
         self.all_fellows = []
@@ -43,7 +45,8 @@ class Dojo:
             else:
                 self.office_allocations[available_office.name] = [fellow.name]
             available_office.spaces -= 1
-
+        else:
+            self.fellow_not_allocated_office.append(fellow)
 
 
         if(WANTS_ACCOMODATION == 'Y'):
@@ -56,6 +59,9 @@ class Dojo:
                 else:
                     self.living_space_allocations[available_living_place.name] = [fellow.name]
                 available_living_place.spaces -= 1
+            else:
+                self.fellow_not_allocated_living_space.append(fellow)
+
         self.all_fellows.append(fellow.name)
         return available_office
 
@@ -69,7 +75,9 @@ class Dojo:
             else:
                 self.office_allocations[available_office.name] = [staff.name]
             available_office.spaces -= 1
-            print(available_office.spaces)
+        else:
+            self.staff_not_allocated.append(staff)
+
         self.all_staff.append(staff.name)
         return staff
 
