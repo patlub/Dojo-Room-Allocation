@@ -71,7 +71,7 @@ class Dojo:
             else:
                 self.fellow_not_allocated_living_space.append(fellow)
 
-        self.all_fellows.append(fellow.name)
+        self.all_fellows.append(fellow)
         return available_office
 
     def add_staff(self, name):
@@ -90,7 +90,7 @@ class Dojo:
         else:
             self.staff_not_allocated.append(staff)
 
-        self.all_staff.append(staff.name)
+        self.all_staff.append(staff)
         return staff
 
     def get_available_office(self):
@@ -106,6 +106,7 @@ class Dojo:
             if living_spaces.contains_space():
                 return living_spaces
         return False
+
     def print_room(self, room_name):
         """Print names of people in room 
            on the screen 
@@ -134,6 +135,7 @@ class Dojo:
             file.write('\n'+room_name.upper()+'\n')
             file.write('---------------------------------------------\n')
             file.write(", ".join(self.office_allocations[room_name]).upper()+'\n')
+        file.close()
 
     def print_un_allocations(self):
         for fellow in self.fellow_not_allocated_office:
@@ -155,23 +157,62 @@ class Dojo:
 
         for fellow in self.staff_not_allocated:
             file.write(fellow.name.upper() + ', Staff Unallocated Office\n')
+        file.close()
+
+    def get_room(self, name):
+        for alloc in self.office_allocations:
+            for person_name in alloc:
+                if name == person_name:
+                    return alloc
+        return False
+
+
+    def re_allocate_person(self, name, room_name):
+        room = self.get_room(name)
+        if room:
+            self.office_allocations[name]
+
+
+    def load_people(self, file_path):
+        with open(file_path) as fp:
+            for line in fp:
+                words = line.split()
+                name = words[0] +' '+ words[1]
+                if words[2] == 'FELLOW':
+                    if words[3] == 'Y':
+                        self.add_fellow(name, 'Y')
+                    else:
+                        self.add_fellow(name)
+                elif words[2] == 'STAFF':
+                    self.add_staff(name)
+
+
+
+
 
 dojo = Dojo()
 dojo.create_room(['blue', 'orange'], 'office')
 dojo.create_room(['livingSpace1'], 'living_space')
 # print(dojo.all_offices)
 
-dojo.add_fellow('Patrick','Y')
-dojo.add_fellow('Jim', 'Y')
-dojo.add_fellow('Moses', 'Y')
-dojo.add_fellow('Becky', 'Y')
-dojo.add_fellow('Sebu', 'Y')
-dojo.add_fellow('Fred', 'Y')
-dojo.add_fellow('Samuel', 'Y')
-dojo.add_fellow('Dona', 'Y')
-print(dojo.office_allocations)
+# dojo.add_fellow('Patrick','Y')
+# dojo.add_fellow('Jim', 'Y')
+# dojo.add_fellow('Moses', 'Y')
+# dojo.add_fellow('Becky', 'Y')
+# dojo.add_fellow('Sebu', 'Y')
+# dojo.add_fellow('Fred', 'Y')
+# dojo.add_fellow('Samuel', 'Y')
+# dojo.add_fellow('Dona', 'Y')
+# print(dojo.office_allocations)
 # print(dojo.living_space_allocations)
 # print(dojo.all_fellows)
 # dojo.print_room('blue')
-dojo.print_allocations_to_file()
-dojo.print_un_allocations_to_file()
+# dojo.print_allocations_to_file()
+# dojo.print_un_allocations_to_file()
+
+dojo.load_people('../files/test.txt')
+for fellow in dojo.all_fellows:
+    print(fellow.name)
+
+for staff in dojo.all_staff:
+    print(staff.name)

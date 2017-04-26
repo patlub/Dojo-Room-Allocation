@@ -113,6 +113,24 @@ class TestClassDojo(unittest.TestCase):
         self.dojo.add_fellow('name8', 'Y')
         self.assertEqual(len(self.dojo.fellow_not_allocated_living_space), 4)
 
+    def test_re_allocate_person(self):
+        office_name_list = ['blue', 'orange']
+        self.dojo.create_room(office_name_list, 'office')
+        self.dojo.add_fellow('name1', 'Y')
+        self.dojo.add_fellow('name2', 'Y')
+        # self.dojo.re_allocate_person('name1', 'orange')
+        self.assertTrue('name1' in self.dojo.office_allocations['orange'])
+
+    def test_loads_people_from_file(self):
+        init_number_of_fellows = len(self.dojo.all_fellows)
+        init_number_of_staff = len(self.dojo.all_staff)
+        self.dojo.load_people('../files/test.txt')
+        final_number_of_fellows = len(self.dojo.all_fellows)
+        final_number_of_staff = len(self.dojo.all_staff)
+
+        self.assertEqual(4, final_number_of_fellows - init_number_of_fellows)
+        self.assertEqual(3, final_number_of_staff - init_number_of_staff)
+
 
             # def test_get_available_office(self):
             #     office_name_list = ['blue']
