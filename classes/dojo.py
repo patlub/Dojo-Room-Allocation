@@ -128,17 +128,33 @@ class Dojo:
             print('---------------------------------------------')
             print(", ".join(self.office_allocations[room_name]).upper())
 
+    def print_allocations_to_file(self):
+        file = open('allocations.txt', 'w')
+        for room_name in self.office_allocations:
+            file.write('\n'+room_name.upper()+'\n')
+            file.write('---------------------------------------------\n')
+            file.write(", ".join(self.office_allocations[room_name]).upper()+'\n')
+
     def print_un_allocations(self):
         for fellow in self.fellow_not_allocated_office:
-            print(fellow.name.upper() + ' Fellow Unallocated Office')
+            print(fellow.name.upper() + ', Fellow Unallocated Office')
 
         for fellow in self.fellow_not_allocated_living_space:
-            print(fellow.name.upper() + ' Fellow Unallocated living space')
+            print(fellow.name.upper() + ', Fellow Unallocated living space')
 
         for fellow in self.staff_not_allocated:
-            print(fellow.name.upper() + ' Staff Unallocated Office')
+            print(fellow.name.upper() + ', Staff Unallocated Office')
 
+    def print_un_allocations_to_file(self):
+        file = open('unallocations.txt', 'w')
+        for fellow in self.fellow_not_allocated_office:
+            file.write(fellow.name.upper() + ', Fellow Unallocated Office\n')
 
+        for fellow in self.fellow_not_allocated_living_space:
+            file.write(fellow.name.upper() + ', Fellow Unallocated living space\n')
+
+        for fellow in self.staff_not_allocated:
+            file.write(fellow.name.upper() + ', Staff Unallocated Office\n')
 
 dojo = Dojo()
 dojo.create_room(['blue', 'orange'], 'office')
@@ -157,5 +173,5 @@ print(dojo.office_allocations)
 # print(dojo.living_space_allocations)
 # print(dojo.all_fellows)
 # dojo.print_room('blue')
-dojo.print_allocations()
-dojo.print_un_allocations()
+dojo.print_allocations_to_file()
+dojo.print_un_allocations_to_file()
