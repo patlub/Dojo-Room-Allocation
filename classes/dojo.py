@@ -128,6 +128,17 @@ class Dojo:
             print('---------------------------------------------')
             print(", ".join(self.office_allocations[room_name]).upper())
 
+    def print_un_allocations(self):
+        for fellow in self.fellow_not_allocated_office:
+            print(fellow.name.upper() + ' Fellow Unallocated Office')
+
+        for fellow in self.fellow_not_allocated_living_space:
+            print(fellow.name.upper() + ' Fellow Unallocated living space')
+
+        for fellow in self.staff_not_allocated:
+            print(fellow.name.upper() + ' Staff Unallocated Office')
+
+
 
 dojo = Dojo()
 dojo.create_room(['blue', 'orange'], 'office')
@@ -147,3 +158,4 @@ print(dojo.office_allocations)
 # print(dojo.all_fellows)
 # dojo.print_room('blue')
 dojo.print_allocations()
+dojo.print_un_allocations()
