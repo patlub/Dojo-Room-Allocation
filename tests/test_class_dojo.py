@@ -56,6 +56,39 @@ class TestClassDojo(unittest.TestCase):
     def test_create_staff_with_accomodation(self):
         initial_staff_count = len(self.dojo.all_staff)
         self.assertEqual(self.dojo.add_staff('name', 'Y'), 'Staff can not have accomodation')
+
+
+    def test_available_space_after_adding_fellow_to_office(self):
+        office_name_list = ['blue']
+        self.dojo.create_room(office_name_list, 'office')
+        self.dojo.add_fellow('name')
+        self.dojo.add_fellow('name2')
+        self.dojo.add_fellow('name3')
+        self.dojo.add_fellow('name4')
+        office = self.dojo.add_fellow('name5')
+        # self.assertEqual(office.spaces, 0)
+        self.assertTrue(office.contains_space())
+
+    def test_space_not_available_after_adding_fellow_to_office(self):
+        office_name_list = ['blue']
+        self.dojo.create_room(office_name_list, 'office')
+        self.dojo.add_fellow('name')
+        self.dojo.add_fellow('name2')
+        self.dojo.add_fellow('name3')
+        self.dojo.add_fellow('name4')
+        self.dojo.add_fellow('name5')
+        self.dojo.add_fellow('name5')
+        office = self.dojo.add_fellow('name5')
+        # self.assertEqual(office.spaces, 0)
+        self.assertFalse(office.contains_space())
+
+    # def test_get_available_office(self):
+    #     office_name_list = ['blue']
+    #     self.dojo.create_room(office_name_list, 'office')
+    #     for office in self.dojo.all_offices:
+
+
+
     #
     # def test_add_fellow_with_junk_name(self):
     #     self.assertEqual(self.dojo.add_fellow('&%$#&', 'fellow'), 'Please use a valid room name')
