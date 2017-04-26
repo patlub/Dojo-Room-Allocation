@@ -70,7 +70,7 @@ class Dojo:
                 available_living_place.spaces -= 1
             else:
                 self.fellow_not_allocated_living_space.append(fellow)
-
+        fellow.office = available_office
         self.all_fellows.append(fellow)
         return available_office
 
@@ -159,19 +159,62 @@ class Dojo:
             file.write(fellow.name.upper() + ', Staff Unallocated Office\n')
         file.close()
 
-    def get_room(self, name):
+    def get_office(self, name):
         for alloc in self.office_allocations:
-            for person_name in alloc:
+            for person_name in self.office_allocations[alloc]:
                 if name == person_name:
                     return alloc
         return False
 
+    def get_living_space(self, name):
+        for alloc in self.living_space_allocations:
+            for person_name in self.living_space_allocations[alloc]:
+                if name == person_name:
+                    return alloc
+        return False
+
+    def is_fellow(self, name, room_name):
+        for fellow in self.all_fellows:
+            if fellow.name == name:
+                for office in self.all_offices:
+                    if office.name == room_name:
+                        fellow.office = office
+                        fellow.office.spaces -= 1
+                        return True
+        return False
+
+    def is_staff(self, name, room_name):
+        for staff in self.all_staff:
+            if staff.name == name:
+                for office in self.all_offices:
+                    if office.name == room_name:
+                        staff.office = office
+                        staff.office.spaces -= 1
+                        return True
+        return False
 
     def re_allocate_person(self, name, room_name):
-        room = self.get_room(name)
-        if room:
-            self.office_allocations[name]
+        room_office = self.get_office(name)
+        room_living_space = self.get_living_space(name)
+        if room_office:
+            self.office_allocations[room_office].remove(name)
+            # Increment space in room
+            for office in self.all_offices:
+                if office.name == room_office:
+                    office.spaces += 1
+            # Check if person is fellow or staff
+            if not self.is_fellow(name, room_name):
+                self.is_staff(name, room_name)
 
+        elif room_living_space:
+            self.living_space_allocations[room_living_space].remove(name)
+            # Increment space in room
+            for living_space in self.all_offices:
+                if living_space.name == room_office:
+                    living_space.spaces += 1
+            # Check if person is fellow or staff
+            if not self.is_fellow(name, room_name):
+                self.is_staff(name, room_name)
 
     def load_people(self, file_path):
         with open(file_path) as fp:
@@ -186,33 +229,24 @@ class Dojo:
                 elif words[2] == 'STAFF':
                     self.add_staff(name)
 
-
-
-
-
 dojo = Dojo()
 dojo.create_room(['blue', 'orange'], 'office')
 dojo.create_room(['livingSpace1'], 'living_space')
 # print(dojo.all_offices)
 
-# dojo.add_fellow('Patrick','Y')
-# dojo.add_fellow('Jim', 'Y')
-# dojo.add_fellow('Moses', 'Y')
-# dojo.add_fellow('Becky', 'Y')
-# dojo.add_fellow('Sebu', 'Y')
-# dojo.add_fellow('Fred', 'Y')
-# dojo.add_fellow('Samuel', 'Y')
-# dojo.add_fellow('Dona', 'Y')
+dojo.add_fellow('Patrick','Y')
+dojo.add_fellow('Jim', 'Y')
+dojo.add_fellow('Moses', 'Y')
+dojo.add_fellow('Becky', 'Y')
+dojo.add_fellow('Sebu', 'Y')
+dojo.add_fellow('Fred', 'Y')
+dojo.add_fellow('Samuel', 'Y')
+dojo.add_fellow('Dona', 'Y')
 # print(dojo.office_allocations)
 # print(dojo.living_space_allocations)
 # print(dojo.all_fellows)
 # dojo.print_room('blue')
 # dojo.print_allocations_to_file()
 # dojo.print_un_allocations_to_file()
-
-dojo.load_people('../files/test.txt')
-for fellow in dojo.all_fellows:
-    print(fellow.name)
-
-for staff in dojo.all_staff:
-    print(staff.name)
+# dojo.get_room('hi')
+dojo.re_allocate_person('Patrick', 'Yellow')
