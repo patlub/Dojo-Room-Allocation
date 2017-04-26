@@ -17,6 +17,9 @@ class Dojo:
         self.all_staff = []
 
     def create_room(self, room_names, room_type):
+        """Creates either an office or living space 
+           depending on the room_type passed 
+        """
         if not isinstance(room_names, list) or not isinstance(room_type, str):
             raise TypeError('Arguments should be a list and string')
         elif not room_names:
@@ -36,9 +39,13 @@ class Dojo:
                 return ('Invalid room type')
 
     def add_fellow(self, name, WANTS_ACCOMODATION = 'N'):
+        """Adds fellow to an office and or living space"""
         fellow = Fellow(name, WANTS_ACCOMODATION, None)
         available_office = self.get_available_office()
+        # If there is a free office
         if available_office:
+            # if key in dictionary, append to the list in dictionary
+            # Otherwise create new key with list
             if available_office.name in self.office_allocations:
                 fellows_list = self.office_allocations[available_office.name]
                 fellows_list.append(fellow.name)
@@ -53,6 +60,8 @@ class Dojo:
             fellow = Fellow(name, WANTS_ACCOMODATION, None)
             available_living_place = self.get_available_living_spaces()
             if available_living_place:
+                # if key in dictionary, append to the list in dictionary
+                # Otherwise create new key with list
                 if available_living_place.name in self.living_space_allocations:
                     fellows_list = self.living_space_allocations[available_living_place.name]
                     fellows_list.append(fellow.name)
@@ -66,9 +75,12 @@ class Dojo:
         return available_office
 
     def add_staff(self, name):
+        """ Add staff to an office"""
         staff = Staff(name)
         available_office = self.get_available_office()
         if available_office:
+            # if key in dictionary, append to the list in dictionary
+            # Otherwise create new key with list
             if available_office.name in self.office_allocations:
                 staff_list = self.office_allocations[available_office.name]
                 staff_list.append(staff.name)
@@ -82,16 +94,34 @@ class Dojo:
         return staff
 
     def get_available_office(self):
+        """Check if offices still have available spaces"""
         for office in self.all_offices:
             if office.contains_space():
                 return office
         return False
 
     def get_available_living_spaces(self):
+        """Check if living space still has available space"""
         for living_spaces in self.all_living_spaces:
             if living_spaces.contains_space():
                 return living_spaces
         return False
+    def print_room(self, room_name):
+        """Print names of people in room 
+           on the screen 
+        """
+        if not isinstance(room_name, str):
+            raise TypeError('Room name should be a string')
+        elif not room_name:
+            return ('Room name can not be empty')
+        else:
+            if room_name in self.office_allocations:
+                for name in self.office_allocations[room_name]:
+                    print(name)
+            elif room_name in self.living_space_allocations:
+                for name in self.office_allocations[room_name]:
+                    print(name)
+
 
 dojo = Dojo()
 dojo.create_room(['blue', 'orange'], 'office')
@@ -109,3 +139,4 @@ dojo.add_fellow('Dona', 'Y')
 print(dojo.office_allocations)
 print(dojo.living_space_allocations)
 print(dojo.all_fellows)
+dojo.print_room('blue')

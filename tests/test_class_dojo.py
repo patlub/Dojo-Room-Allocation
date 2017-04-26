@@ -113,6 +113,7 @@ class TestClassDojo(unittest.TestCase):
         self.dojo.add_fellow('name8', 'Y')
         self.assertEqual(len(self.dojo.fellow_not_allocated_living_space), 4)
 
+
             # def test_get_available_office(self):
             #     office_name_list = ['blue']
             #     self.dojo.create_room(office_name_list, 'office')
