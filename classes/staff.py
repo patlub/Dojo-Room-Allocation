@@ -5,6 +5,5 @@ class Staff(Person):
         super().__init__(name, None)
         self.name = name
         self.office = None
-        self.living_space = None
 
 
