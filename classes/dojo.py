@@ -11,7 +11,14 @@ from modals.table_def import FellowModel
 
 
 class Dojo:
+    """
+    Dojo class to handle all responsibilities of the dojo
+    """
     def __init__(self):
+        """
+        Initialise lists and dictionaries to to hold data
+        for different objects
+        """
 
         self.all_offices = []
         self.office_allocations = {}
@@ -75,9 +82,12 @@ class Dojo:
                 else:
                     self.living_space_allocations[available_living_place.name] = [fellow.name]
                 available_living_place.spaces -= 1
+                # Assign office to fellow
+                fellow.office = available_office
             else:
                 self.fellow_not_allocated_living_space.append(fellow)
-        fellow.office = available_office
+
+        # Append fellow to list of fellows
         self.all_fellows.append(fellow)
         return available_office
 
@@ -91,12 +101,15 @@ class Dojo:
             if available_office.name in self.office_allocations:
                 staff_list = self.office_allocations[available_office.name]
                 staff_list.append(staff.name)
+
             else:
                 self.office_allocations[available_office.name] = [staff.name]
             available_office.spaces -= 1
+            # Assign office to staff
+            staff.office = available_office
+
         else:
             self.staff_not_allocated.append(staff)
-
         self.all_staff.append(staff)
         return staff
 
@@ -238,7 +251,7 @@ class Dojo:
 
 
     def save_state(self):
-        engine = create_engine('sqlite:///Dojo.db', echo=True)
+        engine = create_engine('sqlite:///..\modals\Dojo.db', echo=True)
 
         # create a Session
         Session = sessionmaker(bind=engine)
@@ -246,18 +259,30 @@ class Dojo:
 
         # Create objects
         for office in self.all_offices:
-            office_modal = OfficeModel(office.name)
-            office_modal.spaces = office.spaces
+            office_modal = OfficeModel(office.name, office.spaces)
             session.add(office_modal)
 
         for living_space in self.all_living_spaces:
-            living_space_modal = LivingSpaceModel(living_space.name)
-            living_space_modal.spaces = living_space.spaces
+            living_space_modal = LivingSpaceModel(living_space.name, living_space.spaces)
             session.add(living_space_modal)
 
-        # for fellow in self.all_fellows:
-        #     fellow_modal = FellowModel
+        for staff in self.all_staff:
+            with session.no_autoflush:
+                office = session.query(OfficeModel).filter_by(name = staff.office.name).first()
+                office_id = office.office_id
+                staff_modal = StaffModel(staff.name, office_id)
+                session.add(staff_modal)
 
+        for fellow in self.all_fellows:
+            with session.no_autoflush:
+                office = session.query(OfficeModel).filter_by(name = fellow.office.name).first()
+                office_id = office.office_id
+
+                living_space = session.query(LivingSpaceModel).filter_by(name=fellow.living_space.name).first()
+                living_space_id = living_space.id
+
+                fellow_modal = FellowModel(fellow.name, office_id, living_space_id)
+                session.add(fellow_modal)
         # commit the record the database
         session.commit()
 
@@ -267,20 +292,27 @@ dojo.create_room(['blue', 'orange'], 'office')
 dojo.create_room(['livingSpace1'], 'living_space')
 # print(dojo.all_offices)
 
-dojo.add_fellow('Patrick','Y')
-dojo.add_fellow('Jim', 'Y')
-dojo.add_fellow('Moses', 'Y')
-dojo.add_fellow('Becky', 'Y')
-dojo.add_fellow('Sebu', 'Y')
-dojo.add_fellow('Fred', 'Y')
-dojo.add_fellow('Samuel', 'Y')
-dojo.add_fellow('Dona', 'Y')
-print(dojo.office_allocations)
-print(dojo.living_space_allocations)
-print(dojo.all_fellows)
-dojo.print_room('blue')
-dojo.print_allocations_to_file()
-dojo.print_un_allocations_to_file()
-dojo.get_office('hi')
-dojo.re_allocate_person('Patrick', 'Yellow')
+# dojo.add_fellow('Patrick','Y')
+dojo.add_staff('Patrick')
+dojo.add_staff('Trey')
+dojo.add_staff('Dan')
+dojo.add_staff('Ian')
+dojo.add_staff('Ive')
+dojo.add_staff('Ivan')
+dojo.add_staff('Ivee')
+# dojo.add_fellow('Jim', 'Y')
+# dojo.add_fellow('Moses', 'Y')
+# dojo.add_fellow('Becky', 'Y')
+# dojo.add_fellow('Sebu', 'Y')
+# dojo.add_fellow('Fred', 'Y')
+# dojo.add_fellow('Samuel', 'Y')
+# dojo.add_fellow('Dona', 'Y')
+# print(dojo.office_allocations)
+# print(dojo.living_space_allocations)
+# print(dojo.all_fellows)
+# dojo.print_room('blue')
+# dojo.print_allocations_to_file()
+# dojo.print_un_allocations_to_file()
+# dojo.get_office('hi')
+# dojo.re_allocate_person('Patrick', 'Yellow')
 dojo.save_state()
