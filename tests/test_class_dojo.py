@@ -132,26 +132,19 @@ class TestClassDojo(unittest.TestCase):
         self.assertEqual(3, final_number_of_staff - init_number_of_staff)
 
 
-            # def test_get_available_office(self):
-            #     office_name_list = ['blue']
-            #     self.dojo.create_room(office_name_list, 'office')
-            #     for office in self.dojo.all_offices:
 
+    def test_add_fellow_with_junk_name(self):
+        self.assertEqual(self.dojo.add_fellow('&%$#&', 'fellow'), 'Please use a valid room name')
 
+    def test_create_fellow_with_empty_string(self):
+        self.assertRaises(ValueError, self.dojo.add_fellow, "", "")
 
-            #
-            # def test_add_fellow_with_junk_name(self):
-            #     self.assertEqual(self.dojo.add_fellow('&%$#&', 'fellow'), 'Please use a valid room name')
-            #
-            # def test_create_fellow_with_empty_string(self):
-            #     self.assertRaises(ValueError, self.dojo.add_fellow, "", "")
-            #
-            # def test_create_fellow_with_non_strings(self):
-            #     self.assertRaises(ValueError, self.dojo.add_fellow(), 5, 9)
+    def test_create_fellow_with_non_strings(self):
+        self.assertRaises(ValueError, self.dojo.add_fellow(), 5, 9)
 
-            # def test_get_available_office(self):
-            #     self.dojo.add_fellow('Patrick', 'Y')
-            #     self.assertEqual()
+    # def test_get_available_office(self):
+    #     self.dojo.add_fellow('Patrick', 'Y')
+    #     self.assertEqual()
 
 
 if __name__ == '__main__':

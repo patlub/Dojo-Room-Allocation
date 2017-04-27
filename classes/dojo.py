@@ -36,8 +36,10 @@ class Dojo:
         """
         if not isinstance(room_names, list) or not isinstance(room_type, str):
             raise TypeError('Arguments should be a list and string')
+
         elif not room_names:
             raise ValueError('List of room names can not be empty')
+
         else:
             # First Check if office name or living_space name exists in list
 
@@ -45,6 +47,7 @@ class Dojo:
                 for room_name in room_names:
                     office = Office(room_name)
                     self.all_offices.append(office)
+
             elif room_type == 'living_space':
                 for room_name in room_names:
                     living_space = LivingSpace(room_name)
@@ -54,8 +57,10 @@ class Dojo:
 
     def add_fellow(self, name, WANTS_ACCOMODATION = 'N'):
         """Adds fellow to an office and or living space"""
+
         fellow = Fellow(name)
         available_office = self.get_available_office()
+
         # If there is a free office
         if available_office:
             # if key in dictionary, append to the list in dictionary
@@ -65,26 +70,31 @@ class Dojo:
                 fellows_list.append(fellow.name)
             else:
                 self.office_allocations[available_office.name] = [fellow.name]
+
             available_office.spaces -= 1
             fellow.office = available_office
+
         else:
             self.fellow_not_allocated_office.append(fellow)
-
 
         if(WANTS_ACCOMODATION == 'Y'):
             fellow = Fellow(name)
             available_living_place = self.get_available_living_spaces()
+
             if available_living_place:
                 # if key in dictionary, append to the list in dictionary
                 # Otherwise create new key with list
                 if available_living_place.name in self.living_space_allocations:
                     fellows_list = self.living_space_allocations[available_living_place.name]
                     fellows_list.append(fellow.name)
+
                 else:
                     self.living_space_allocations[available_living_place.name] = [fellow.name]
+
                 available_living_place.spaces -= 1
                 # Assign office to fellow
                 fellow.office = available_office
+
             else:
                 self.fellow_not_allocated_living_space.append(fellow)
 
@@ -94,8 +104,10 @@ class Dojo:
 
     def add_staff(self, name):
         """ Add staff to an office"""
+
         staff = Staff(name)
         available_office = self.get_available_office()
+
         if available_office:
             # if key in dictionary, append to the list in dictionary
             # Otherwise create new key with list
@@ -111,11 +123,13 @@ class Dojo:
 
         else:
             self.staff_not_allocated.append(staff)
+
         self.all_staff.append(staff)
         return staff
 
     def get_available_office(self):
         """Check if offices still have available spaces"""
+
         for office in self.all_offices:
             if office.contains_space():
                 return office
@@ -123,6 +137,7 @@ class Dojo:
 
     def get_available_living_spaces(self):
         """Check if living space still has available space"""
+
         for living_spaces in self.all_living_spaces:
             if living_spaces.contains_space():
                 return living_spaces
@@ -134,25 +149,32 @@ class Dojo:
         """
         if not isinstance(room_name, str):
             raise TypeError('Room name should be a string')
+
         elif not room_name:
             return ('Room name can not be empty')
+
         else:
             if room_name in self.office_allocations:
                 for name in self.office_allocations[room_name]:
                     print(name)
+
             elif room_name in self.living_space_allocations:
                 for name in self.office_allocations[room_name]:
                     print(name)
 
     def print_allocations(self):
         """Print space allocations to screen"""
+        text = ''
         for room_name in self.office_allocations:
-            print(room_name.upper())
-            print('---------------------------------------------')
-            print(", ".join(self.office_allocations[room_name]).upper())
+            text = text + (room_name.upper())
+            text = text + ('---------------------------------------------')
+            text = text + (", ".join(self.office_allocations[room_name]).upper())
+
+        print(text)
 
     def print_allocations_to_file(self):
         """Print space allocations to file"""
+
         file = open('allocations.txt', 'w')
         for room_name in self.office_allocations:
             file.write('\n'+room_name.upper()+'\n')
@@ -188,6 +210,7 @@ class Dojo:
 
     def get_office(self, name):
         """Get office when given person's name"""
+
         for alloc in self.office_allocations:
             for person_name in self.office_allocations[alloc]:
                 if name == person_name:
@@ -196,6 +219,7 @@ class Dojo:
 
     def get_living_space(self, name):
         """Get office when given person's name"""
+
         for alloc in self.living_space_allocations:
             for person_name in self.living_space_allocations[alloc]:
                 if name == person_name:
@@ -204,6 +228,7 @@ class Dojo:
 
     def is_fellow(self, name, room_name):
         """Check if person is fellow"""
+
         for fellow in self.all_fellows:
             if fellow.name == name:
                 for office in self.all_offices:
@@ -215,6 +240,7 @@ class Dojo:
 
     def is_staff(self, name, room_name):
         """Check if person is staff"""
+
         for staff in self.all_staff:
             if staff.name == name:
                 for office in self.all_offices:
@@ -225,24 +251,30 @@ class Dojo:
         return False
 
     def re_allocate_person(self, name, room_name):
+        """Reallocates person from current room to new room"""
+
         room_office = self.get_office(name)
         room_living_space = self.get_living_space(name)
+
         if room_office:
             self.office_allocations[room_office].remove(name)
             # Increment space in room
             for office in self.all_offices:
                 if office.name == room_office:
                     office.spaces += 1
+
             # Check if person is fellow or staff
             if not self.is_fellow(name, room_name):
                 self.is_staff(name, room_name)
 
         elif room_living_space:
             self.living_space_allocations[room_living_space].remove(name)
+
             # Increment space in room
             for living_space in self.all_offices:
                 if living_space.name == room_office:
                     living_space.spaces += 1
+
             # Check if person is fellow or staff
             self.is_fellow(name, room_name)
             # self.is_staff(name, room_name)
@@ -290,13 +322,16 @@ class Dojo:
         # Save fellow to db
         for fellow in self.all_fellows:
             with session.no_autoflush:
-                office = session.query(OfficeModel).filter_by(name = fellow.office.name).first()
-                office_id = office.office_id
+                if fellow.office != None:
+                    office = session.query(OfficeModel).filter_by(name = fellow.office.name).first()
+                    office_id = office.office_id
 
+                # check if fellow living space is None
                 if fellow.living_space == None:
                     living_space_id = None
                     fellow_modal = FellowModel(fellow.name, office_id, living_space_id)
                     session.add(fellow_modal)
+
                 else:
                     living_space = session.query(LivingSpaceModel).filter_by(name=fellow.living_space.name).first()
                     living_space_id = living_space.id
@@ -379,15 +414,15 @@ dojo.add_fellow('Jim', 'Y')
 dojo.add_fellow('Moses', 'Y')
 dojo.add_fellow('Becky', 'Y')
 dojo.add_fellow('Sebu')
-# dojo.add_fellow('Fred', 'Y')
-# dojo.add_fellow('Samuel', 'Y')
-# dojo.add_fellow('Dona', 'Y')
-# print(dojo.office_allocations)
-# print(dojo.living_space_allocations)
-# print(dojo.all_fellows)
-# dojo.print_room('blue')
-# dojo.print_allocations_to_file()
-# dojo.print_un_allocations_to_file()
-# dojo.get_office('hi')
-# dojo.re_allocate_person('Patrick', 'Yellow')
+dojo.add_fellow('Fred', 'Y')
+dojo.add_fellow('Samuel', 'Y')
+dojo.add_fellow('Dona', 'Y')
+print(dojo.office_allocations)
+print(dojo.living_space_allocations)
+print(dojo.all_fellows)
+dojo.print_room('blue')
+dojo.print_allocations_to_file()
+dojo.print_un_allocations_to_file()
+dojo.get_office('hi')
+dojo.re_allocate_person('Patrick', 'Yellow')
 dojo.save_state()
