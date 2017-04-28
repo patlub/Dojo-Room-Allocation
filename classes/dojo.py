@@ -10,7 +10,6 @@ from modals.table_def import StaffModel
 from modals.table_def import FellowModel
 from random import shuffle
 
-
 class Dojo:
     """
     Dojo class to handle all responsibilities of the dojo
