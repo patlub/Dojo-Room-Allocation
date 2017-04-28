@@ -8,12 +8,14 @@ from modals.table_def import OfficeModel
 from modals.table_def import LivingSpaceModel
 from modals.table_def import StaffModel
 from modals.table_def import FellowModel
+from random import shuffle
 
 
 class Dojo:
     """
     Dojo class to handle all responsibilities of the dojo
     """
+
     def __init__(self):
         """
         Initialise lists and dictionaries to to hold data
@@ -41,7 +43,15 @@ class Dojo:
             raise ValueError('List of room names can not be empty')
 
         else:
-            # First Check if office name or living_space name exists in list
+            for room_name in room_names:
+                for office in self.all_offices:
+                    if room_name == office.name:
+                        return 'Room name already exists'
+
+            for room_name in room_names:
+                for living_space in self.all_living_spaces:
+                    if room_name == living_space.name:
+                        return 'Room name already exists'
 
             if room_type == 'office':
                 for room_name in room_names:
@@ -55,7 +65,7 @@ class Dojo:
             else:
                 return ('Invalid room type')
 
-    def add_fellow(self, name, WANTS_ACCOMODATION = 'N'):
+    def add_fellow(self, name, WANTS_ACCOMODATION='N'):
         """Adds fellow to an office and or living space"""
 
         fellow = Fellow(name)
@@ -77,7 +87,7 @@ class Dojo:
         else:
             self.fellow_not_allocated_office.append(fellow)
 
-        if(WANTS_ACCOMODATION == 'Y'):
+        if (WANTS_ACCOMODATION == 'Y'):
             fellow = Fellow(name)
             available_living_place = self.get_available_living_spaces()
 
@@ -129,7 +139,7 @@ class Dojo:
 
     def get_available_office(self):
         """Check if offices still have available spaces"""
-
+        shuffle(self.all_offices)
         for office in self.all_offices:
             if office.contains_space():
                 return office
@@ -137,7 +147,7 @@ class Dojo:
 
     def get_available_living_spaces(self):
         """Check if living space still has available space"""
-
+        shuffle(self.all_living_spaces)
         for living_spaces in self.all_living_spaces:
             if living_spaces.contains_space():
                 return living_spaces
@@ -166,20 +176,20 @@ class Dojo:
         """Print space allocations to screen"""
         text = ''
         for room_name in self.office_allocations:
-            text = text + (room_name.upper())
-            text = text + ('---------------------------------------------')
-            text = text + (", ".join(self.office_allocations[room_name]).upper())
+            print(room_name.upper())
+            print('---------------------------------------------')
+            print(", ".join(self.office_allocations[room_name]).upper())
 
         print(text)
 
-    def print_allocations_to_file(self):
+    def print_allocations_to_file(self, filename):
         """Print space allocations to file"""
-
-        file = open('allocations.txt', 'w')
+        filename = '../files/' + filename
+        file = open(filename, 'w')
         for room_name in self.office_allocations:
-            file.write('\n'+room_name.upper()+'\n')
+            file.write('\n' + room_name.upper() + '\n')
             file.write('---------------------------------------------\n')
-            file.write(", ".join(self.office_allocations[room_name]).upper()+'\n')
+            file.write(", ".join(self.office_allocations[room_name]).upper() + '\n')
         file.close()
 
     def print_un_allocations(self):
@@ -194,10 +204,11 @@ class Dojo:
         for fellow in self.staff_not_allocated:
             print(fellow.name.upper() + ', Staff Unallocated Office')
 
-    def print_un_allocations_to_file(self):
+    def print_un_allocations_to_file(self, filename):
         """Print spaces not allocated to file"""
+        filename = '../files/' + filename
 
-        file = open('unallocations.txt', 'w')
+        file = open(filename, 'w')
         for fellow in self.fellow_not_allocated_office:
             file.write(fellow.name.upper() + ', Fellow Unallocated Office\n')
 
@@ -284,7 +295,7 @@ class Dojo:
         with open(file_path) as fp:
             for line in fp:
                 words = line.split()
-                name = words[0] +' '+ words[1]
+                name = words[0] + ' ' + words[1]
                 if words[2] == 'FELLOW':
                     if words[3] == 'Y':
                         self.add_fellow(name, 'Y')
@@ -293,9 +304,12 @@ class Dojo:
                 elif words[2] == 'STAFF':
                     self.add_staff(name)
 
-
-    def save_state(self):
-        engine = create_engine('sqlite:///..\modals\Dojo.db', echo=True)
+    def save_state(self, db = None):
+        if db is None:
+            engine = create_engine('sqlite:///..\modals\Dojo.db', echo=True)
+        else:
+            db = db +'.db'
+            engine = create_engine('sqlite:///..\modals\\' + db, echo=True)
 
         # create a Session
         Session = sessionmaker(bind=engine)
@@ -314,7 +328,7 @@ class Dojo:
         # Save staff spaces to db
         for staff in self.all_staff:
             with session.no_autoflush:
-                office = session.query(OfficeModel).filter_by(name = staff.office.name).first()
+                office = session.query(OfficeModel).filter_by(name=staff.office.name).first()
                 office_id = office.office_id
                 staff_modal = StaffModel(staff.name, office_id)
                 session.add(staff_modal)
@@ -323,7 +337,7 @@ class Dojo:
         for fellow in self.all_fellows:
             with session.no_autoflush:
                 if fellow.office != None:
-                    office = session.query(OfficeModel).filter_by(name = fellow.office.name).first()
+                    office = session.query(OfficeModel).filter_by(name=fellow.office.name).first()
                     office_id = office.office_id
 
                 # check if fellow living space is None
@@ -340,8 +354,12 @@ class Dojo:
         # commit the record the database
         session.commit()
 
-    def load_state(self):
-        engine = create_engine('sqlite:///..\modals\Dojo.db', echo=True)
+    def load_state(self, db = None):
+        if db is None:
+            engine = create_engine('sqlite:///..\modals\Dojo.db', echo=True)
+        else:
+            db = db +'.db'
+            engine = create_engine('sqlite:///..\modals\\' + db, echo=True)
 
         # create a Session
         Session = sessionmaker(bind=engine)
@@ -366,7 +384,7 @@ class Dojo:
             office_id = staff.office_id
 
             # Create new office using databsse office details
-            office = session.query(OfficeModel).filter_by(id = office_id).first()
+            office = session.query(OfficeModel).filter_by(id=office_id).first()
             office_name = office.name
             new_office = Office(office_name)
 
@@ -396,33 +414,3 @@ class Dojo:
             new_fellow.living_space = new_living_space
             self.all_fellows.append(new_fellow)
 
-
-dojo = Dojo()
-dojo.create_room(['blue', 'orange'], 'office')
-dojo.create_room(['livingSpace1'], 'living_space')
-# print(dojo.all_offices)
-
-# dojo.add_fellow('Patrick','Y')
-dojo.add_staff('Patrick')
-dojo.add_staff('Trey')
-dojo.add_staff('Dan')
-# dojo.add_staff('Ian')
-# dojo.add_staff('Ive')
-# dojo.add_staff('Ivan')
-# dojo.add_staff('Ivee')
-dojo.add_fellow('Jim', 'Y')
-dojo.add_fellow('Moses', 'Y')
-dojo.add_fellow('Becky', 'Y')
-dojo.add_fellow('Sebu')
-dojo.add_fellow('Fred', 'Y')
-dojo.add_fellow('Samuel', 'Y')
-dojo.add_fellow('Dona', 'Y')
-print(dojo.office_allocations)
-print(dojo.living_space_allocations)
-print(dojo.all_fellows)
-dojo.print_room('blue')
-dojo.print_allocations_to_file()
-dojo.print_un_allocations_to_file()
-dojo.get_office('hi')
-dojo.re_allocate_person('Patrick', 'Yellow')
-dojo.save_state()

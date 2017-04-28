@@ -26,37 +26,30 @@ class TestClassDojo(unittest.TestCase):
     def test_create_room_with_wrong_argument_types(self):
         self.assertRaises(TypeError, self.dojo.create_room, 5, 9)
 
-    # def test_create_room_with_junk_name(self):
-    #     self.assertEqual(self.dojo.create_room, 'Please use a valid room name')
-
     def test_create_fellow_successfully_without_accomodation_specified(self):
         initial_fellow_count = len(self.dojo.all_fellows)
         self.dojo.add_fellow('name')
         new_fellow_count = len(self.dojo.all_fellows)
         self.assertEqual(new_fellow_count - initial_fellow_count, 1)
 
-    #
     def test_create_fellow_successfully_with_accomodation(self):
         initial_fellow_count = len(self.dojo.all_fellows)
         self.dojo.add_fellow('name', 'Y')
         new_fellow_count = len(self.dojo.all_fellows)
         self.assertEqual(new_fellow_count - initial_fellow_count, 1)
 
-    #
     def test_create_fellow_successfully_without_accomodation(self):
         initial_fellow_count = len(self.dojo.all_fellows)
         self.dojo.add_fellow('name', 'N')
         new_fellow_count = len(self.dojo.all_fellows)
         self.assertEqual(new_fellow_count - initial_fellow_count, 1)
 
-    #
     def test_create_staff_successfully_without_accomodation(self):
         initial_staff_count = len(self.dojo.all_staff)
         self.dojo.add_staff('name')
         new_staff_count = len(self.dojo.all_staff)
         self.assertEqual(new_staff_count - initial_staff_count, 1)
 
-    #
     def test_create_staff_with_accomodation(self):
         initial_staff_count = len(self.dojo.all_staff)
         self.assertEqual(self.dojo.add_staff('name', 'Y'), 'Staff can not have accomodation')
@@ -69,7 +62,6 @@ class TestClassDojo(unittest.TestCase):
         self.dojo.add_fellow('name3')
         self.dojo.add_fellow('name4')
         office = self.dojo.add_fellow('name5')
-        # self.assertEqual(office.spaces, 0)
         self.assertTrue(office.contains_space())
 
     def test_space_not_available_after_adding_fellow_to_office(self):
@@ -118,7 +110,7 @@ class TestClassDojo(unittest.TestCase):
         self.dojo.create_room(office_name_list, 'office')
         self.dojo.add_fellow('name1', 'Y')
         self.dojo.add_fellow('name2', 'Y')
-        # self.dojo.re_allocate_person('name1', 'orange')
+        self.dojo.re_allocate_person('name1', 'orange')
         self.assertTrue('name1' in self.dojo.office_allocations['orange'])
 
     def test_loads_people_from_file(self):
@@ -131,8 +123,6 @@ class TestClassDojo(unittest.TestCase):
         self.assertEqual(4, final_number_of_fellows - init_number_of_fellows)
         self.assertEqual(3, final_number_of_staff - init_number_of_staff)
 
-
-
     def test_add_fellow_with_junk_name(self):
         self.assertEqual(self.dojo.add_fellow('&%$#&', 'fellow'), 'Please use a valid room name')
 
@@ -141,11 +131,6 @@ class TestClassDojo(unittest.TestCase):
 
     def test_create_fellow_with_non_strings(self):
         self.assertRaises(ValueError, self.dojo.add_fellow(), 5, 9)
-
-    # def test_get_available_office(self):
-    #     self.dojo.add_fellow('Patrick', 'Y')
-    #     self.assertEqual()
-
 
 if __name__ == '__main__':
     unittest.main()
