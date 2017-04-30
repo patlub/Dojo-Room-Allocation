@@ -5,6 +5,6 @@ class Fellow(Person):
         super().__init__(name, None)
         self.office = None
         self.name = name
-        self.living_space = None
+        self.living_place = None
 
 

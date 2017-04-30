@@ -4,11 +4,10 @@ from classes.fellow import Fellow
 from classes.staff import Staff
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from modals.table_def import OfficeModel
-from modals.table_def import LivingSpaceModel
-from modals.table_def import StaffModel
-from modals.table_def import FellowModel
+from typing import Union
+# from modals.table_def import OfficeModel, LivingSpaceModel, StaffModel, FellowModel
 from random import shuffle
+
 
 class Dojo:
     """
@@ -22,10 +21,8 @@ class Dojo:
         """
 
         self.all_offices = []
-        self.office_allocations = {}
-        self.living_space_allocations = {}
-        self.fellow_not_allocated_office = []
-        self.fellow_not_allocated_living_space = []
+        self.fellows_not_allocated_office = []
+        self.fellows_not_allocated_living_space = []
         self.staff_not_allocated = []
         self.all_living_spaces = []
         self.all_fellows = []
@@ -42,14 +39,10 @@ class Dojo:
             raise ValueError('List of room names can not be empty')
 
         else:
+            rooms = self.all_offices + self.all_living_spaces
             for room_name in room_names:
-                for office in self.all_offices:
-                    if room_name == office.name:
-                        return 'Room name already exists'
-
-            for room_name in room_names:
-                for living_space in self.all_living_spaces:
-                    if room_name == living_space.name:
+                for room in rooms:
+                    if room_name == room.name:
                         return 'Room name already exists'
 
             if room_type == 'office':
@@ -70,46 +63,24 @@ class Dojo:
         fellow = Fellow(name)
         available_office = self.get_available_office()
 
-        # If there is a free office
         if available_office:
-            # if key in dictionary, append to the list in dictionary
-            # Otherwise create new key with list
-            if available_office.name in self.office_allocations:
-                fellows_list = self.office_allocations[available_office.name]
-                fellows_list.append(fellow.name)
-            else:
-                self.office_allocations[available_office.name] = [fellow.name]
-
-            available_office.spaces -= 1
+            self.add_person_to_room(fellow, available_office)
             fellow.office = available_office
-
         else:
-            self.fellow_not_allocated_office.append(fellow)
+            self.fellows_not_allocated_office.append(fellow)
 
         if (WANTS_ACCOMODATION == 'Y'):
-            fellow = Fellow(name)
-            available_living_place = self.get_available_living_spaces()
+            available_living_space = self.get_available_living_spaces()
 
-            if available_living_place:
-                # if key in dictionary, append to the list in dictionary
-                # Otherwise create new key with list
-                if available_living_place.name in self.living_space_allocations:
-                    fellows_list = self.living_space_allocations[available_living_place.name]
-                    fellows_list.append(fellow.name)
-
-                else:
-                    self.living_space_allocations[available_living_place.name] = [fellow.name]
-
-                available_living_place.spaces -= 1
-                # Assign office to fellow
-                fellow.office = available_office
-
+            if available_living_space:
+                self.add_person_to_room(fellow, available_living_space)
+                fellow.living_place = available_living_space
             else:
-                self.fellow_not_allocated_living_space.append(fellow)
+                self.fellows_not_allocated_living_space.append(fellow)
 
         # Append fellow to list of fellows
         self.all_fellows.append(fellow)
-        return available_office
+        return fellow
 
     def add_staff(self, name):
         """ Add staff to an office"""
@@ -117,34 +88,29 @@ class Dojo:
         staff = Staff(name)
         available_office = self.get_available_office()
 
+        # If there is a free office
         if available_office:
-            # if key in dictionary, append to the list in dictionary
-            # Otherwise create new key with list
-            if available_office.name in self.office_allocations:
-                staff_list = self.office_allocations[available_office.name]
-                staff_list.append(staff.name)
-
-            else:
-                self.office_allocations[available_office.name] = [staff.name]
-            available_office.spaces -= 1
-            # Assign office to staff
+            self.add_person_to_room(staff, available_office)
             staff.office = available_office
-
         else:
             self.staff_not_allocated.append(staff)
-
         self.all_staff.append(staff)
         return staff
 
-    def get_available_office(self):
-        """Check if offices still have available spaces"""
+    def get_available_office(self) -> Union[bool, Office]:
+        """Check if offices still have available spaces
+        """
         shuffle(self.all_offices)
         for office in self.all_offices:
             if office.contains_space():
                 return office
         return False
 
-    def get_available_living_spaces(self):
+    def add_person_to_room(self, person, room):
+        room.occupants.append(person)
+        room.spaces -= 1
+
+    def get_available_living_spaces(self) -> Union[bool, Office]:
         """Check if living space still has available space"""
         shuffle(self.all_living_spaces)
         for living_spaces in self.all_living_spaces:
@@ -163,131 +129,108 @@ class Dojo:
             return ('Room name can not be empty')
 
         else:
-            if room_name in self.office_allocations:
-                for name in self.office_allocations[room_name]:
-                    print(name)
-
-            elif room_name in self.living_space_allocations:
-                for name in self.office_allocations[room_name]:
-                    print(name)
+            rooms = self.all_offices + self.all_living_spaces
+            for room in rooms:
+                if room.name == room_name:
+                    print('-------------' + room_name + '-------------')
+                    for person in room.occupants:
+                        print(person.name)
 
     def print_allocations(self):
         """Print space allocations to screen"""
-        text = ''
-        for room_name in self.office_allocations:
-            print(room_name.upper())
-            print('---------------------------------------------')
-            print(", ".join(self.office_allocations[room_name]).upper())
-
+        text = self.allocations_text()
         print(text)
 
     def print_allocations_to_file(self, filename):
         """Print space allocations to file"""
         filename = '../files/' + filename
         file = open(filename, 'w')
-        for room_name in self.office_allocations:
-            file.write('\n' + room_name.upper() + '\n')
-            file.write('---------------------------------------------\n')
-            file.write(", ".join(self.office_allocations[room_name]).upper() + '\n')
+        text = self.allocations_text()
+        file.write(text)
         file.close()
+
+    def allocations_text(self):
+        rooms = self.all_offices + self.all_living_spaces
+        text = ''
+        for room in rooms:
+            text += room.name.upper() + '\n'
+            text += '---------------------------------------------\n'
+            occupants_list = room.occupants
+            for person in occupants_list:
+                text += (person.name) + ', '
+            text += '\n\n'
+        return text
 
     def print_un_allocations(self):
         """Print spaces not allocated to screen"""
+        text = self.un_allocations_text()
+        print(text)
 
-        for fellow in self.fellow_not_allocated_office:
-            print(fellow.name.upper() + ', Fellow Unallocated Office')
+    def un_allocations_text(self):
+        text = ''
+        for fellow in self.fellows_not_allocated_office:
+            text += fellow.name.upper() + ', Fellow Unallocated Office\n'
 
-        for fellow in self.fellow_not_allocated_living_space:
-            print(fellow.name.upper() + ', Fellow Unallocated living space')
+        for fellow in self.fellows_not_allocated_living_space:
+            text += fellow.name.upper() + ', Fellow Unallocated living space\n'
 
         for fellow in self.staff_not_allocated:
-            print(fellow.name.upper() + ', Staff Unallocated Office')
+            text += fellow.name.upper() + ', Staff Unallocated Office\n'
+
+        return text
 
     def print_un_allocations_to_file(self, filename):
         """Print spaces not allocated to file"""
         filename = '../files/' + filename
 
         file = open(filename, 'w')
-        for fellow in self.fellow_not_allocated_office:
-            file.write(fellow.name.upper() + ', Fellow Unallocated Office\n')
-
-        for fellow in self.fellow_not_allocated_living_space:
-            file.write(fellow.name.upper() + ', Fellow Unallocated living space\n')
-
-        for fellow in self.staff_not_allocated:
-            file.write(fellow.name.upper() + ', Staff Unallocated Office\n')
+        text = self.un_allocations_text()
+        file.write(text)
         file.close()
 
-    def get_office(self, name):
-        """Get office when given person's name"""
-
-        for alloc in self.office_allocations:
-            for person_name in self.office_allocations[alloc]:
-                if name == person_name:
-                    return alloc
-        return False
-
-    def get_living_space(self, name):
-        """Get office when given person's name"""
-
-        for alloc in self.living_space_allocations:
-            for person_name in self.living_space_allocations[alloc]:
-                if name == person_name:
-                    return alloc
-        return False
-
-    def is_fellow(self, name, room_name):
-        """Check if person is fellow"""
-
-        for fellow in self.all_fellows:
-            if fellow.name == name:
-                for office in self.all_offices:
-                    if office.name == room_name:
-                        fellow.office = office
-                        fellow.office.spaces -= 1
-                        return True
-        return False
-
-    def is_staff(self, name, room_name):
-        """Check if person is staff"""
-
-        for staff in self.all_staff:
-            if staff.name == name:
-                for office in self.all_offices:
-                    if office.name == room_name:
-                        staff.office = office
-                        staff.office.spaces -= 1
-                        return True
-        return False
-
-    def re_allocate_person(self, name, room_name):
+    def re_allocate_person(self, person_name, room_name):
         """Reallocates person from current room to new room"""
+        room = self.get_room(room_name)
+        if (room):
+            person = self.get_person(person_name)
+            if (person):
+                if isinstance(room, Office):
+                    self.re_allocate_to_office(person, room)
+                elif isinstance(room, LivingSpace):
+                    if isinstance(person, Fellow):
+                        self.re_allocate_to_living_space(person, room)
+                    else:
+                        return 'Cant Re-allocate staff to a living room'
+            else:
+                return 'Person with name ' + person_name + ' does not exist'
+        else:
+            return 'Room with name ' + room_name + ' does not exist'
 
-        room_office = self.get_office(name)
-        room_living_space = self.get_living_space(name)
+    def re_allocate_to_office(self, person, room):
+        person.office.occupants.remove(person)
+        person.office.spaces -= 1
+        room.occupants.append(person)
+        person.office = room
 
-        if room_office:
-            self.office_allocations[room_office].remove(name)
-            # Increment space in room
-            for office in self.all_offices:
-                if office.name == room_office:
-                    office.spaces += 1
+    def re_allocate_to_living_space(self, person, room):
+        person.living_place.occupants.remove(person)
+        person.living_place.spaces -= 1
+        room.occupants.append(person)
+        person.office = room
 
-            # Check if person is fellow or staff
-            if not self.is_fellow(name, room_name):
-                self.is_staff(name, room_name)
+    def get_person(self, name):
+        persons = self.all_fellows + self.all_staff
+        for person in persons:
+            if person.name == name:
+                return person
+        return False
 
-        elif room_living_space:
-            self.living_space_allocations[room_living_space].remove(name)
-
-            # Increment space in room
-            for living_space in self.all_offices:
-                if living_space.name == room_office:
-                    living_space.spaces += 1
-
-            # Check if person is fellow or staff
-            self.is_fellow(name, room_name)
-            # self.is_staff(name, room_name)
+    def get_room(self, room_name):
+        rooms = self.all_offices + self.all_living_spaces
+        for room in rooms:
+            if room.name == room_name:
+                return room
+        return False
 
     def load_people(self, file_path):
         """Loads people from text file"""
@@ -303,11 +246,11 @@ class Dojo:
                 elif words[2] == 'STAFF':
                     self.add_staff(name)
 
-    def save_state(self, db = None):
+    def save_state(self, db=None):
         if db is None:
             engine = create_engine('sqlite:///..\modals\Dojo.db', echo=True)
         else:
-            db = db +'.db'
+            db = db + '.db'
             engine = create_engine('sqlite:///..\modals\\' + db, echo=True)
 
         # create a Session
@@ -353,11 +296,11 @@ class Dojo:
         # commit the record the database
         session.commit()
 
-    def load_state(self, db = None):
+    def load_state(self, db=None):
         if db is None:
             engine = create_engine('sqlite:///..\modals\Dojo.db', echo=True)
         else:
-            db = db +'.db'
+            db = db + '.db'
             engine = create_engine('sqlite:///..\modals\\' + db, echo=True)
 
         # create a Session
@@ -410,6 +353,34 @@ class Dojo:
 
             # Append new office to list of office objects
             new_fellow.office = new_office
-            new_fellow.living_space = new_living_space
+            new_fellow.living_place = new_living_space
             self.all_fellows.append(new_fellow)
 
+# dojo = Dojo()
+# dojo.create_room(['blue', 'red', 'yellow'], 'office')
+# dojo.create_room(['hotel'], 'living_space')
+# print(dojo.all_offices)
+
+# dojo.add_fellow('Patrick', 'Y')
+# dojo.add_staff('Patrick')
+# dojo.add_staff('Trey')
+# dojo.add_staff('Dan')
+# dojo.add_staff('Ian')
+# dojo.add_staff('Ive')
+# dojo.add_staff('Ivan')
+# dojo.add_staff('Ivee')
+# dojo.add_fellow('Jim', 'Y')
+# dojo.add_fellow('Moses', 'Y')
+# dojo.add_fellow('Becky', 'Y')
+# dojo.add_fellow('Sebu')
+# dojo.add_fellow('Fred', 'Y')
+# dojo.add_fellow('Samuel', 'Y')
+# dojo.add_fellow('Dona', 'Y')
+# print(dojo.print_allocations())
+# dojo.print_room('blue')
+# dojo.print_allocations_to_file('hey.txt')
+# dojo.print_un_allocations()
+# dojo.print_un_allocations_to_file('unalloc')
+# dojo.get_office('hi')
+# dojo.re_allocate_person('Patrick', 'Yellow')
+# dojo.save_state()
