@@ -2,13 +2,13 @@
 This example uses docopt with the built in cmd module to demonstrate an
 interactive command application.
 Usage:
-    (dojo) create_room <room_type> <room_name>
-    (dojo) add_person person_name (<FELLOW>|<STAFF>) [<wants_accommodation>]
+    (dojo) create_room <room_type> <room_name>...
+    (dojo) add_person <first_name> <last_name> (<FELLOW>|<STAFF>) [<wants_accommodation>]
     (dojo) print_room <room_name>
     (dojo) print_allocations [--o=filename]
     (dojo) print_unallocated [--o=filename]
-    (dojo) reallocate_person <person_identifier> <new_room_name>
-    (dojo) load_people
+    (dojo) reallocate_person <first_name> <last_name> <new_room_name>
+    (dojo) load_people <file_path>
     (dojo) save_state [--db=sqlite_database]
     (dojo) load_state <sqlite_database>
     (dojo) (-i | --interactive)
@@ -70,17 +70,16 @@ class TheDojo(cmd.Cmd):
 
     @docopt_cmd
     def do_create_room(self, arg):
-        """Usage: create_room <room_type> <room_name>"""
-        room_names = []
-        room_names.append(arg['<room_name>'])
-        print(room_names)
+        """Usage: create_room <room_type> <room_name>..."""
+        room_names = (arg['<room_name>'])
         room_type = arg['<room_type>']
         dojo.create_room(room_names, room_type)
 
     @docopt_cmd
     def do_add_person(self, arg):
-        """Usage: add_person <person_name> (<FELLOW>|<STAFF>) [<wants_accommodation>]"""
-        person_name = arg['<person_name>']
+        """Usage: add_person <first_name> <last_name> (<FELLOW>|<STAFF>) [<wants_accommodation>]"""
+
+        person_name = arg['<first_name>'] + ' ' +arg['<last_name>']
         accomodation = arg['<wants_accommodation>']
 
         if arg['<FELLOW>']:
@@ -112,15 +111,15 @@ class TheDojo(cmd.Cmd):
 
     @docopt_cmd
     def do_reallocate_person(self, arg):
-        """Usage: reallocate_person <person_identifier> <new_room_name>"""
-        person_name = arg['<person_identifier>']
+        """Usage: reallocate_person <first_name> <last_name> <new_room_name>"""
+        person_name = arg['<first_name>'] + ' ' +arg['<last_name>']
         room_name = arg['<new_room_name>']
-        dojo.re_allocate_person(person_name, room_name)
+        print(dojo.re_allocate_person(person_name, room_name))
 
     @docopt_cmd
     def do_load_people(self, arg):
-        """Usage: load_people"""
-        dojo.load_people()
+        """Usage: load_people <file_path>"""
+        dojo.load_people(arg['<file_path>'])
 
     @docopt_cmd
     def do_save_state(self, arg):
