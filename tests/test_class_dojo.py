@@ -187,14 +187,5 @@ class TestClassDojo(unittest.TestCase):
         self.assertEqual(4, final_number_of_fellows - init_number_of_fellows)
         self.assertEqual(3, final_number_of_staff - init_number_of_staff)
 
-    def test_add_fellow_with_junk_name(self):
-        self.assertEqual(self.dojo.add_fellow('&%$#&', 'fellow'), 'Please use a valid room name')
-
-    def test_create_fellow_with_empty_string(self):
-        self.assertRaises(ValueError, self.dojo.add_fellow, "", "")
-
-    def test_create_fellow_with_non_strings(self):
-        self.assertRaises(ValueError, self.dojo.add_fellow(), 5, 9)
-
 if __name__ == '__main__':
     unittest.main()
