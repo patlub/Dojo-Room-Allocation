@@ -124,15 +124,16 @@ class TheDojo(cmd.Cmd):
     @docopt_cmd
     def do_save_state(self, arg):
         """Usage: save_state [--db=sqlite_database]"""
-        if arg['--o'] is None:
+
+        if arg['--db'] is None:
             dojo.save_state()
         else:
-            dojo.save_state(arg['--o'])
+            dojo.save_state(arg['--db'])
 
     @docopt_cmd
     def do_load_state(self, arg):
         """Usage: load_state [--db=sqlite_database]"""
-        if arg['--o'] is None:
+        if arg['--db'] is None:
             dojo.load_state()
         else:
             dojo.load_state(arg['--o'])

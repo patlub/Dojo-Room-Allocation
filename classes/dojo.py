@@ -1,9 +1,10 @@
 from classes.room import Office, LivingSpace, Fellow, Staff
+from modals.table_def import OfficeModel, FellowModel, StaffModel, LivingSpaceModel
+from modals.table_def import engine
+from random import shuffle
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from typing import Union
-# from modals.table_def import engine
-from random import shuffle
 
 
 class Dojo:
@@ -38,27 +39,57 @@ class Dojo:
         else:
             rooms = self.all_offices + self.all_living_spaces
             for room_name in room_names:
-                for room in rooms:
-                    if room_name == room.name:
-                        print('-----------Room name ' + room_name + ' already exists, Please choose another name-------------')
+                if not rooms:
+                    self.create_an_office_or_a_living_space(room_type, room_name)
+                    rooms = self.all_offices + self.all_living_spaces
 
-            if room_type == 'office':
-                for room_name in room_names:
-                    office = Office(room_name)
-                    self.all_offices.append(office)
-                    print('-------------Office ' + room_name + ' has been created----------------')
+                else:
+                    if (self.is_room_exists(room_name)):
+                        print('Room with name ' + room_name + ' Already exists')
+                    else:
+                        self.create_an_office_or_a_living_space(room_type, room_name)
 
-            elif room_type == 'living_space':
-                for room_name in room_names:
-                    living_space = LivingSpace(room_name)
-                    self.all_living_spaces.append(living_space)
-                    print('-------------Living space ' + room_name + ' has been created----------------')
+    def is_room_exists(self, room_name):
+        """
+        Check if room with name, room_name already exists
+        :param room_name: 
+        :return boolean: 
+        """
+        rooms = self.all_offices + self.all_living_spaces
+        for room in rooms:
+            if room_name == room.name:
+                return True
+        return False
 
-            else:
-                return ('Invalid room type')
+    def create_an_office_or_a_living_space(self, room_type, room_name):
+        """
+        Creates a room of type room_type with a specified name room_name
+        :param room_type: 
+        :param room_name: 
+        :return: 
+        """
+        if room_type == 'office':
+            office = Office(room_name)
+            self.all_offices.append(office)
+            print('-------------Office ' + room_name + ''
+                                                       ' has been created----------------')
+
+        elif room_type == 'living_space':
+            living_space = LivingSpace(room_name)
+            self.all_living_spaces.append(living_space)
+            print('-------------Living space ' + room_name + ''
+                                                             ' has been created----------------')
+
+        else:
+            print('Invalid room type')
 
     def add_fellow(self, name, WANTS_ACCOMODATION='N'):
-        """Adds fellow to an office and or living space"""
+        """
+        Adds fellow to an office and or living space
+        :param name: 
+        :param WANTS_ACCOMODATION: 
+        :return: 
+        """
 
         fellow = Fellow(name)
         available_office = self.get_available_office()
@@ -66,10 +97,12 @@ class Dojo:
         if available_office:
             self.add_person_to_room(fellow, available_office)
             fellow.office = available_office
-            print('----------------Fellow ' + name + ' has been added to office ' + available_office.name)
+            print('----------------Fellow ' + name + ' '
+                                                     'has been added to office ' + available_office.name)
         else:
             self.fellows_not_allocated_office.append(fellow)
-            print('----------------Fellow ' + name + ' is currently unallocated office')
+            print('----------------Fellow ' + name + ''
+                                                     ' is currently unallocated office')
 
         if (WANTS_ACCOMODATION == 'Y'):
             available_living_space = self.get_available_living_spaces()
@@ -77,18 +110,26 @@ class Dojo:
             if available_living_space:
                 self.add_person_to_room(fellow, available_living_space)
                 fellow.living_place = available_living_space
-                print('----------------Fellow ' + name + ' has been added to Living space ' + available_living_space.name)
+                print(
+                    '----------------Fellow ' + name + ' '
+                                                       'has been added to Living space '
+                    + available_living_space.name)
 
             else:
                 self.fellows_not_allocated_living_space.append(fellow)
-                print('----------------Fellow ' + name + ' is currently unallocated Living space')
+                print('----------------Fellow ' + name + ''
+                                                         ' is currently unallocated Living space')
 
         # Append fellow to list of fellows
         self.all_fellows.append(fellow)
         return fellow
 
     def add_staff(self, name):
-        """ Add staff to an office"""
+        """
+        Add staff to an office
+        :param name: 
+        :return: 
+        """
 
         staff = Staff(name)
         available_office = self.get_available_office()
@@ -97,16 +138,20 @@ class Dojo:
         if available_office:
             self.add_person_to_room(staff, available_office)
             staff.office = available_office
-            print('----------------Staff ' + name + ' has been added to office ' + available_office.name)
+            print('----------------Staff ' + name + ' '
+                                                    'has been added to office ' + available_office.name)
         else:
             self.staff_not_allocated.append(staff)
-            print('----------------Staff ' + name + ' is currently unallocated due to unavailable Living space')
+            print('----------------Staff ' + name + ' '
+                                                    'is currently unallocated due to unavailable Living space')
 
         self.all_staff.append(staff)
         return staff
 
     def get_available_office(self) -> Union[bool, Office]:
-        """Check if offices still have available spaces
+        """
+        Check if offices still have available spaces
+        :return: 
         """
         shuffle(self.all_offices)
         for office in self.all_offices:
@@ -115,11 +160,20 @@ class Dojo:
         return False
 
     def add_person_to_room(self, person, room):
+        """
+        Adds a person to a room
+        :param person: 
+        :param room: 
+        :return: 
+        """
         room.occupants.append(person)
         room.spaces -= 1
 
     def get_available_living_spaces(self) -> Union[bool, LivingSpace]:
-        """Check if living space still has available space"""
+        """
+        Check if living space still has available space
+        :return: 
+        """
         shuffle(self.all_living_spaces)
         for living_space in self.all_living_spaces:
             if living_space.contains_space():
@@ -141,16 +195,22 @@ class Dojo:
             for room in rooms:
                 if room.name == room_name:
                     print('-------------' + room_name + '-------------')
-                    if len(room.occupants) == 0:
+                    if not room.occupants:
                         print('Room is currently empty')
+                        return None
                     else:
                         for person in room.occupants:
                             print(person.name)
+                        return None
+            print('Room ' + room_name + ' does not exist')
 
     def print_allocations(self):
         """Print space allocations to screen"""
         text = self.allocations_text()
-        print(text)
+        if not text:
+            print('No persons are currently allocated rooms')
+        else:
+            print(text)
 
     def print_allocations_to_file(self, filename):
         """Print space allocations to file"""
@@ -161,6 +221,10 @@ class Dojo:
         file.close()
 
     def allocations_text(self):
+        """
+        generates text of all room allocations
+        :return: 
+        """
         rooms = self.all_offices + self.all_living_spaces
         text = ''
         for room in rooms:
@@ -175,9 +239,16 @@ class Dojo:
     def print_un_allocations(self):
         """Print spaces not allocated to screen"""
         text = self.un_allocations_text()
-        print(text)
+        if not text:
+            print('No persons are currently not allocated rooms')
+        else:
+            print(text)
 
     def un_allocations_text(self):
+        """
+        geaerates text of people not allocated room space
+        :return: 
+        """
         text = ''
         for fellow in self.fellows_not_allocated_office:
             text += fellow.name.upper() + ', Fellow Unallocated Office\n'
@@ -200,16 +271,27 @@ class Dojo:
         file.close()
 
     def re_allocate_person(self, person_name, room_name):
-        """Reallocates person from current room to new room"""
+        """
+        Reallocates person from current room to new room
+        :param person_name: 
+        :param room_name: 
+        :return: 
+        """
         room = self.get_room(room_name)
         if (room):
             person = self.get_person(person_name)
+
             if (person):
                 if isinstance(room, Office):
+                    if person.office == room:
+                        return person_name + ' is already in room ' + room_name
                     self.re_allocate_to_office(person, room)
                     return person_name + ' has been reallocated to Office ' + room_name
+
                 elif isinstance(room, LivingSpace):
                     if isinstance(person, Fellow):
+                        if person.living_place == room:
+                            return person_name + ' is already in room ' + room_name
                         self.re_allocate_to_living_space(person, room)
                         return person_name + ' has been reallocated to Living Space ' + room_name
 
@@ -221,21 +303,48 @@ class Dojo:
             return 'Room with name ' + room_name + ' does not exist'
 
     def re_allocate_to_office(self, person, room):
+        """
+        Re-allocates a person to an office
+        :param person: 
+        :param room: 
+        :return: 
+        """
+
         persons_not_allocated = self.fellows_not_allocated_office + self.staff_not_allocated
         if person not in persons_not_allocated:
             person.office.occupants.remove(person)
             person.office.spaces -= 1
+        else:
+            if isinstance(person, Fellow):
+                self.fellows_not_allocated_office.remove(person)
+            else:
+                self.staff_not_allocated.remove(person)
+
         room.occupants.append(person)
         person.office = room
 
     def re_allocate_to_living_space(self, person, room):
+        """
+        Re-allocates a person to a living space
+        :param person: 
+        :param room: 
+        :return: 
+        """
         if person not in self.fellows_not_allocated_living_space:
             person.living_place.occupants.remove(person)
             person.living_place.spaces -= 1
+        else:
+            self.fellows_not_allocated_living_space.remove(person)
+
         room.occupants.append(person)
         person.office = room
 
     def get_person(self, name):
+        """
+        Gets a person when passed a person's name
+        :param name: 
+        :return: 
+        """
         persons = self.all_fellows + self.all_staff
         for person in persons:
             if person.name == name:
@@ -243,6 +352,11 @@ class Dojo:
         return False
 
     def get_room(self, room_name):
+        """
+        Gets a room when passed a room name
+        :param room_name: 
+        :return: 
+        """
         rooms = self.all_offices + self.all_living_spaces
         for room in rooms:
             if room.name == room_name:
@@ -267,9 +381,7 @@ class Dojo:
             print('File not Found')
 
     def save_state(self, db=None):
-        # if db is None:
-        #     engine = create_engine('sqlite:///..\modals\Dojo.db', echo=True)
-        # else:
+        # if db is not None:
         #     db = db + '.db'
         #     engine = create_engine('sqlite:///..\modals\\' + db, echo=True)
 
@@ -300,19 +412,21 @@ class Dojo:
             with session.no_autoflush:
                 if fellow.office != None:
                     office = session.query(OfficeModel).filter_by(name=fellow.office.name).first()
-                    office_id = office.office_id
+                    if office:
+                        office_id = office.office_id
 
                 # check if fellow living space is None
-                if fellow.living_space == None:
+                if fellow.living_place == None:
                     living_space_id = None
                     fellow_modal = FellowModel(fellow.name, office_id, living_space_id)
                     session.add(fellow_modal)
 
                 else:
-                    living_space = session.query(LivingSpaceModel).filter_by(name=fellow.living_space.name).first()
-                    living_space_id = living_space.id
-                    fellow_modal = FellowModel(fellow.name, office_id, living_space_id)
-                    session.add(fellow_modal)
+                    living_space = session.query(LivingSpaceModel).filter_by(name=fellow.living_place.name).first()
+                    if living_space:
+                        living_space_id = living_space.id
+                        fellow_modal = FellowModel(fellow.name, office_id, living_space_id)
+                        session.add(fellow_modal)
         # commit the record the database
         session.commit()
 
@@ -328,7 +442,7 @@ class Dojo:
         session = Session()
 
         # Loads offices from the databe
-        for office in session.query(OfficeModel).order_by(OfficeModel.id):
+        for office in session.query(OfficeModel).order_by(OfficeModel.office_id):
             new_office = Office(office.name)
             new_office.spaces = office.spaces
             self.all_offices.append(new_office)
@@ -376,8 +490,9 @@ class Dojo:
             new_fellow.living_place = new_living_space
             self.all_fellows.append(new_fellow)
 
-dojo = Dojo()
-dojo.create_room(['blue', 'red', 'yellow'], 'office')
+# dojo = Dojo()
+# dojo.create_room(['blue', 'blue', 'blue', 'red'], 'office')
+# dojo.create_room(['blue', 'red', 'yellow'], 'office')
 # dojo.create_room(['hotel'], 'living_space')
 # print(dojo.all_offices)
 
