@@ -31,8 +31,8 @@ class LivingSpace(Room):
 class Fellow(Person):
     def __init__(self, name):
         super().__init__(name, None)
-        self.office = None
         self.name = name
+        self.office = None
         self.living_place = None
 
 class Staff(Person):

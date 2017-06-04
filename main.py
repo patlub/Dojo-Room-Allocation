@@ -3,7 +3,7 @@ This example uses docopt with the built in cmd module to demonstrate an
 interactive command application.
 Usage:
     (dojo) create_room <room_type> <room_name>...
-    (dojo) add_person <first_name> <last_name> (<FELLOW>|<STAFF>) [<wants_accommodation>]
+    (dojo) add_person <first_name> <last_name> <person_type> [<wants_accommodation>]
     (dojo) print_room <room_name>
     (dojo) print_allocations [--o=filename]
     (dojo) print_unallocated [--o=filename]
@@ -60,7 +60,10 @@ def docopt_cmd(func):
     fn.__dict__.update(func.__dict__)
     return fn
 
+
 dojo = Dojo()
+
+
 class TheDojo(cmd.Cmd):
     intro = 'Welcome to THE DOJO OFFICE ALLOCATION PROGRAM!' \
             + ' (type help for a list of commands.)'
@@ -77,12 +80,12 @@ class TheDojo(cmd.Cmd):
 
     @docopt_cmd
     def do_add_person(self, arg):
-        """Usage: add_person <first_name> <last_name> (<FELLOW>|<STAFF>) [<wants_accommodation>]"""
+        """Usage: add_person <first_name> <last_name> <person_type> [<wants_accommodation>]"""
 
-        person_name = arg['<first_name>'] + ' ' +arg['<last_name>']
+        person_name = arg['<first_name>'] + ' ' + arg['<last_name>']
         accomodation = arg['<wants_accommodation>']
 
-        if arg['<FELLOW>']:
+        if arg['<person_type>'] == 'FELLOW':
             dojo.add_fellow(person_name, accomodation)
         else:
             dojo.add_staff(person_name)
@@ -112,9 +115,9 @@ class TheDojo(cmd.Cmd):
     @docopt_cmd
     def do_reallocate_person(self, arg):
         """Usage: reallocate_person <first_name> <last_name> <new_room_name>"""
-        person_name = arg['<first_name>'] + ' ' +arg['<last_name>']
+        person_name = arg['<first_name>'] + ' ' + arg['<last_name>']
         room_name = arg['<new_room_name>']
-        print(dojo.re_allocate_person(person_name, room_name))
+        dojo.re_allocate_person(person_name, room_name)
 
     @docopt_cmd
     def do_load_people(self, arg):
@@ -150,4 +153,3 @@ opt = docopt(__doc__, sys.argv[1:])
 if opt['--interactive']:
     TheDojo().cmdloop()
 print(opt)
-

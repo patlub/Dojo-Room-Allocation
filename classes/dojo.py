@@ -2,7 +2,8 @@ from classes.room import Office, LivingSpace, Fellow, Staff
 from modals.table_def import OfficeModel, FellowModel, StaffModel, LivingSpaceModel
 from modals.table_def import engine
 from random import shuffle
-from sqlalchemy import create_engine
+import click
+# from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from typing import Union
 
@@ -31,7 +32,7 @@ class Dojo:
            depending on the room_type passed 
         """
         if not isinstance(room_names, list) or not isinstance(room_type, str):
-            raise TypeError('Arguments should be a list and string')
+            raise TypeError('Arguments should be a list and string respectively')
 
         elif not room_names:
             raise ValueError('List of room names can not be empty')
@@ -44,8 +45,10 @@ class Dojo:
                     rooms = self.all_offices + self.all_living_spaces
 
                 else:
-                    if (self.is_room_exists(room_name)):
-                        print('Room with name ' + room_name + ' Already exists')
+                    if self.is_room_exists(room_name):
+                        click.secho('%s %s already exists, choose another name'
+                                    % (room_type, room_name),
+                                    fg='red', bold=True)
                     else:
                         self.create_an_office_or_a_living_space(room_type, room_name)
 
@@ -71,23 +74,24 @@ class Dojo:
         if room_type == 'office':
             office = Office(room_name)
             self.all_offices.append(office)
-            print('-------------Office ' + room_name + ''
-                                                       ' has been created----------------')
+            click.secho('-------------Office %s has been created'
+                        '----------------' % room_name, fg='green', bold=True)
 
         elif room_type == 'living_space':
             living_space = LivingSpace(room_name)
             self.all_living_spaces.append(living_space)
-            print('-------------Living space ' + room_name + ''
-                                                             ' has been created----------------')
+            click.secho('-------------Living space %s'
+                        ' has been created----------------'
+                        % room_name, fg='green', bold=True)
 
         else:
-            print('Invalid room type')
+            click.secho('Invalid room type', fg='red', bold=True)
 
-    def add_fellow(self, name, WANTS_ACCOMODATION='N'):
+    def add_fellow(self, name, wants_accomodation='N'):
         """
         Adds fellow to an office and or living space
         :param name: 
-        :param WANTS_ACCOMODATION: 
+        :param wants_accomodation: 
         :return: 
         """
 
@@ -97,28 +101,29 @@ class Dojo:
         if available_office:
             self.add_person_to_room(fellow, available_office)
             fellow.office = available_office
-            print('----------------Fellow ' + name + ' '
-                                                     'has been added to office ' + available_office.name)
+            click.secho('----------------Fellow %s has been added to office %s'
+                        % (name, available_office.name), fg='cyan', bold=True)
+
         else:
             self.fellows_not_allocated_office.append(fellow)
-            print('----------------Fellow ' + name + ''
-                                                     ' is currently unallocated office')
+            click.secho('----------------Fellow %s has been added'
+                        % name, fg='cyan', bold=True)
+            click.secho('----------------Fellow %s is currently '
+                        'unallocated office' % name, fg='yellow', bold=True)
 
-        if (WANTS_ACCOMODATION == 'Y'):
+        if wants_accomodation == 'Y':
             available_living_space = self.get_available_living_spaces()
 
             if available_living_space:
                 self.add_person_to_room(fellow, available_living_space)
                 fellow.living_place = available_living_space
-                print(
-                    '----------------Fellow ' + name + ' '
-                                                       'has been added to Living space '
-                    + available_living_space.name)
+                click.secho('----------------Fellow %s has been added to office %s'
+                            % (name, available_living_space.name), fg='cyan', bold=True)
 
             else:
                 self.fellows_not_allocated_living_space.append(fellow)
-                print('----------------Fellow ' + name + ''
-                                                         ' is currently unallocated Living space')
+                click.secho('----------------Fellow %s is currently '
+                            'unallocated living space' % name, fg='yellow', bold=True)
 
         # Append fellow to list of fellows
         self.all_fellows.append(fellow)
@@ -138,12 +143,15 @@ class Dojo:
         if available_office:
             self.add_person_to_room(staff, available_office)
             staff.office = available_office
-            print('----------------Staff ' + name + ' '
-                                                    'has been added to office ' + available_office.name)
+            click.secho('----------------Staff %s has been added to office %s'
+                        % (name, available_office.name), fg='cyan', bold=True)
+
         else:
             self.staff_not_allocated.append(staff)
-            print('----------------Staff ' + name + ' '
-                                                    'is currently unallocated due to unavailable Living space')
+            click.secho('----------------Staff %s has been added'
+                        % name, fg='cyan', bold=True)
+            click.secho('----------------Staff %s is currently '
+                        'unallocated Living space' % name, fg='yellow', bold=True)
 
         self.all_staff.append(staff)
         return staff
@@ -188,19 +196,20 @@ class Dojo:
             raise TypeError('Room name should be a string')
 
         elif not room_name:
-            return ('Room name can not be empty')
+            return 'Room name can not be empty'
 
         else:
             rooms = self.all_offices + self.all_living_spaces
             for room in rooms:
                 if room.name == room_name:
-                    print('-------------' + room_name + '-------------')
+                    click.secho('-------------' + room_name +
+                                '-------------', fg='cyan', bold=True)
                     if not room.occupants:
-                        print('Room is currently empty')
+                        click.secho('Room is currently empty', fg='red', bold=True)
                         return None
                     else:
                         for person in room.occupants:
-                            print(person.name)
+                            click.secho(person.name, fg='green', bold=True)
                         return None
             print('Room ' + room_name + ' does not exist')
 
@@ -208,9 +217,10 @@ class Dojo:
         """Print space allocations to screen"""
         text = self.allocations_text()
         if not text:
-            print('No persons are currently allocated rooms')
+            click.secho('No persons are currently allocated rooms',
+                        fg='red', bold=True)
         else:
-            print(text)
+            click.secho(text, fg='cyan', bold=True)
 
     def print_allocations_to_file(self, filename):
         """Print space allocations to file"""
@@ -228,11 +238,16 @@ class Dojo:
         rooms = self.all_offices + self.all_living_spaces
         text = ''
         for room in rooms:
-            text += room.name.upper() + '\n'
+            if isinstance(room, Office):
+                room_type = 'Office '
+            else:
+                room_type = 'Living Space '
+
+            text += room_type + room.name.upper() + '\n'
             text += '---------------------------------------------\n'
             occupants_list = room.occupants
             for person in occupants_list:
-                text += (person.name) + ', '
+                text += person.name + ', '
             text += '\n\n'
         return text
 
@@ -240,9 +255,10 @@ class Dojo:
         """Print spaces not allocated to screen"""
         text = self.un_allocations_text()
         if not text:
-            print('No persons are currently not allocated rooms')
+            click.secho('No persons are currently not allocated rooms',
+                        fg='red', bold=True)
         else:
-            print(text)
+            click.secho(text, fg='cyan', bold=True)
 
     def un_allocations_text(self):
         """
@@ -278,28 +294,44 @@ class Dojo:
         :return: 
         """
         room = self.get_room(room_name)
-        if (room):
-            person = self.get_person(person_name)
+        if room:
+            if not room.contains_space():
+                click.secho('%s is already full' % room_name, fg='red', bold=True)
+                return 'Room already full'
 
-            if (person):
+            person = self.get_person(person_name)
+            if person:
                 if isinstance(room, Office):
                     if person.office == room:
-                        return person_name + ' is already in room ' + room_name
+                        click.secho('%s is already in room %s'
+                                    % (person_name, room_name), fg='red', bold=True)
+                        return '%s is already in room %s' % (person_name, room_name)
                     self.re_allocate_to_office(person, room)
-                    return person_name + ' has been reallocated to Office ' + room_name
+                    click.secho('%s has been reallocated to office %s'
+                                % (person_name, room_name), fg='cyan', bold=True)
+                    return '%s has been reallocated to Office %s' % (person_name, room_name)
 
                 elif isinstance(room, LivingSpace):
                     if isinstance(person, Fellow):
                         if person.living_place == room:
-                            return person_name + ' is already in room ' + room_name
+                            return person_name + \
+                                   ' is already in room ' + room_name
                         self.re_allocate_to_living_space(person, room)
-                        return person_name + ' has been reallocated to Living Space ' + room_name
+                        click.secho('%s has been reallocated to Living Space %s'
+                                    % (person_name, room_name), fg='cyan', bold=True)
+                        return '%s has been reallocated to Living Space %s' \
+                               % (person_name, room_name)
 
                     else:
+                        click.secho('Cant Re-allocate staff to a living room',
+                                    fg='red', bold=True)
                         return 'Cant Re-allocate staff to a living room'
             else:
+                click.secho('Person with name %s does not exist'
+                            % person_name, fg='red', bold=True)
                 return 'Person with name ' + person_name + ' does not exist'
         else:
+            click.secho('Room with name %s does not exist' % room_name)
             return 'Room with name ' + room_name + ' does not exist'
 
     def re_allocate_to_office(self, person, room):
@@ -310,7 +342,8 @@ class Dojo:
         :return: 
         """
 
-        persons_not_allocated = self.fellows_not_allocated_office + self.staff_not_allocated
+        persons_not_allocated = \
+            self.fellows_not_allocated_office + self.staff_not_allocated
         if person not in persons_not_allocated:
             person.office.occupants.remove(person)
             person.office.spaces -= 1
@@ -366,21 +399,27 @@ class Dojo:
     def load_people(self, file_path):
         """Loads people from text file"""
         try:
-            with open(file_path) as fp:
-                for line in fp:
-                    words = line.split()
-                    name = words[0] + ' ' + words[1]
-                    if words[2] == 'FELLOW':
-                        if words[3] == 'Y':
-                            self.add_fellow(name, 'Y')
-                        else:
-                            self.add_fellow(name)
-                    elif words[2] == 'STAFF':
-                        self.add_staff(name)
-        except:
-            print('File not Found')
+            fp = open(file_path)
+        except FileNotFoundError:
+            print('File path ' + file_path + ' not found')
+        else:
+            for line in fp:
+                words = line.split()
+                name = words[0] + ' ' + words[1]
+                if words[2] == 'FELLOW':
+                    if words[3] == 'Y':
+                        self.add_fellow(name, 'Y')
+                    else:
+                        self.add_fellow(name)
+                elif words[2] == 'STAFF':
+                    self.add_staff(name)
 
     def save_state(self, db=None):
+        """
+        Persist the current data to the Database
+        :param db: 
+        :return: 
+        """
         # if db is not None:
         #     db = db + '.db'
         #     engine = create_engine('sqlite:///..\modals\\' + db, echo=True)
@@ -410,13 +449,13 @@ class Dojo:
         # Save fellow to db
         for fellow in self.all_fellows:
             with session.no_autoflush:
-                if fellow.office != None:
+                if not fellow.office:
                     office = session.query(OfficeModel).filter_by(name=fellow.office.name).first()
                     if office:
                         office_id = office.office_id
 
                 # check if fellow living space is None
-                if fellow.living_place == None:
+                if not fellow.living_place:
                     living_space_id = None
                     fellow_modal = FellowModel(fellow.name, office_id, living_space_id)
                     session.add(fellow_modal)
@@ -431,6 +470,11 @@ class Dojo:
         session.commit()
 
     def load_state(self, db=None):
+        """
+        Load data from the database into program memory
+        :param db: 
+        :return: 
+        """
         # if db is None:
         #     engine = create_engine('sqlite:///..\modals\Dojo.db', echo=True)
         # else:
