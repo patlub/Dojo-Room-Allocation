@@ -1,3 +1,6 @@
+"""
+Table Definitions for Dojo objects
+"""
 from sqlalchemy import create_engine, ForeignKey
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
@@ -56,19 +59,17 @@ class StaffModel(Base):
     __tablename__ = "staff"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String)
-    office_id = Column('office_id', Integer, ForeignKey('office.office_id'), nullable=True)
+    name = Column(String(50))
+    office = Column(String(25))
 
-    # office = relationship('Office')
-
-    def __init__(self, name, office_id):
+    def __init__(self, name, office):
         """
         Attributes
         :param name: 
         :param office_id: 
         """
         self.name = name
-        self.office_id = office_id
+        self.office = office
 
 
 class FellowModel(Base):
@@ -78,13 +79,12 @@ class FellowModel(Base):
     __tablename__ = "fellow"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String)
-    office_id = Column('office_id', Integer, ForeignKey('office.office_id'), nullable=True)
-    living_space_id = Column('living_space_id', Integer, ForeignKey('living_space.id'), nullable=True)
+    name = Column(String(50))
+    office = Column(String(25))
+    living_space = Column(String(25))
+    wants_accomodation = Column(String(2))
 
-    # office = relationship('Office')
-
-    def __init__(self, name, office_id, living_space_id):
+    def __init__(self, name, office, living_space, wants_accomadation):
         """
         Attributes
         :param name: 
@@ -92,8 +92,9 @@ class FellowModel(Base):
         :param living_space_id: 
         """
         self.name = name
-        self.office_id = office_id
-        self.living_space_id = living_space_id
+        self.office = office
+        self.living_space = living_space
+        self.wants_accomodation = wants_accomadation
 
 
 # create tables

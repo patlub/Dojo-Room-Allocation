@@ -178,6 +178,13 @@ class TestClassDojo(unittest.TestCase):
         self.dojo.create_room(['orange'], 'living_space')
         self.assertEqual(self.dojo.re_allocate_person('Samuel','orange'), 'Cant Re-allocate staff to a living room')
 
+    def test_re_allocate_fellow_who_doesnt_want_accomodation(self):
+        office_name_list = ['blue']
+        self.dojo.create_room(office_name_list, 'living_space')
+        self.dojo.add_fellow('Samuel', 'N')
+        self.dojo.create_room(['orange'], 'living_space')
+        self.assertEqual(self.dojo.re_allocate_person('Samuel','orange'), 'Samuel does not want accommodation')
+
     def test_loads_people_from_file(self):
         init_number_of_fellows = len(self.dojo.all_fellows)
         init_number_of_staff = len(self.dojo.all_staff)

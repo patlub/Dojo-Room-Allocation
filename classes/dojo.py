@@ -95,7 +95,7 @@ class Dojo:
         :return: 
         """
 
-        fellow = Fellow(name)
+        fellow = Fellow(name, wants_accomodation)
         available_office = self.get_available_office()
 
         if available_office:
@@ -117,7 +117,7 @@ class Dojo:
             if available_living_space:
                 self.add_person_to_room(fellow, available_living_space)
                 fellow.living_place = available_living_space
-                click.secho('----------------Fellow %s has been added to office %s'
+                click.secho('----------------Fellow %s has been added to living space %s'
                             % (name, available_living_space.name), fg='cyan', bold=True)
 
             else:
@@ -316,16 +316,19 @@ class Dojo:
                         if person.living_place == room:
                             return person_name + \
                                    ' is already in room ' + room_name
-                        self.re_allocate_to_living_space(person, room)
-                        click.secho('%s has been reallocated to Living Space %s'
-                                    % (person_name, room_name), fg='cyan', bold=True)
-                        return '%s has been reallocated to Living Space %s' \
-                               % (person_name, room_name)
-
+                        if self.re_allocate_to_living_space(person, room):
+                            click.secho('%s has been reallocated to Living Space %s'
+                                        % (person_name, room_name), fg='cyan', bold=True)
+                            return '%s has been reallocated to Living Space %s' \
+                                   % (person_name, room_name)
+                        else:
+                            click.secho('-----------%s does not want accommodation----------'
+                                        % person.name, fg='red', bold=True)
+                            return '%s does not want accommodation' % person.name
                     else:
-                        click.secho('Cant Re-allocate staff to a living room',
+                        click.secho('Cant Re-allocate staff to a living space',
                                     fg='red', bold=True)
-                        return 'Cant Re-allocate staff to a living room'
+                        return 'Cant Re-allocate staff to a living space'
             else:
                 click.secho('Person with name %s does not exist'
                             % person_name, fg='red', bold=True)
@@ -363,6 +366,8 @@ class Dojo:
         :param room: 
         :return: 
         """
+        if person.wants_accomodation == 'N':
+            return False
         if person not in self.fellows_not_allocated_living_space:
             person.living_place.occupants.remove(person)
             person.living_place.spaces -= 1
@@ -440,34 +445,18 @@ class Dojo:
 
         # Save staff spaces to db
         for staff in self.all_staff:
-            with session.no_autoflush:
-                office = session.query(OfficeModel).filter_by(name=staff.office.name).first()
-                office_id = office.office_id
-                staff_modal = StaffModel(staff.name, office_id)
-                session.add(staff_modal)
+            staff_modal = StaffModel(staff.name, staff.office.name)
+            session.add(staff_modal)
 
         # Save fellow to db
         for fellow in self.all_fellows:
-            with session.no_autoflush:
-                # if not fellow.office:
-                office = session.query(OfficeModel).filter_by(name=fellow.office.name).first()
-                if office:
-                    office_id = office.office_id
+            fellow_modal = FellowModel(fellow.name, fellow.office.name,
+                                       fellow.living_place.name, fellow.wants_accomodation)
+            session.add(fellow_modal)
 
-                # check if fellow living space is None
-                if not fellow.living_place:
-                    living_space_id = None
-                    fellow_modal = FellowModel(fellow.name, office_id, living_space_id)
-                    session.add(fellow_modal)
-
-                else:
-                    living_space = session.query(LivingSpaceModel).filter_by(name=fellow.living_place.name).first()
-                    if living_space:
-                        living_space_id = living_space.id
-                        fellow_modal = FellowModel(fellow.name, office_id, living_space_id)
-                        session.add(fellow_modal)
         # commit the record the database
-        session.commit()
+        if session.commit():
+            click.secho('Current Application state saved to Database', fg='green', bold=True)
 
     def load_state(self, db=None):
         """

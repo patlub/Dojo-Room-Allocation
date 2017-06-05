@@ -29,11 +29,12 @@ class LivingSpace(Room):
 
 
 class Fellow(Person):
-    def __init__(self, name):
+    def __init__(self, name, wants_accommodation):
         super().__init__(name, None)
         self.name = name
         self.office = None
         self.living_place = None
+        self.wants_accomodation = wants_accommodation
 
 class Staff(Person):
     def __init__(self, name):
