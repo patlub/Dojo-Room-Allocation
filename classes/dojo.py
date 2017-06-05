@@ -449,10 +449,10 @@ class Dojo:
         # Save fellow to db
         for fellow in self.all_fellows:
             with session.no_autoflush:
-                if not fellow.office:
-                    office = session.query(OfficeModel).filter_by(name=fellow.office.name).first()
-                    if office:
-                        office_id = office.office_id
+                # if not fellow.office:
+                office = session.query(OfficeModel).filter_by(name=fellow.office.name).first()
+                if office:
+                    office_id = office.office_id
 
                 # check if fellow living space is None
                 if not fellow.living_place:
