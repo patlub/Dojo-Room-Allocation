@@ -36,8 +36,17 @@ class Fellow(Person):
         self.living_place = None
         self.wants_accomodation = wants_accommodation
 
+    def __str__(self) -> str:
+        return 'Fellow'
+
+
 class Staff(Person):
     def __init__(self, name):
         super().__init__(name, None)
         self.name = name
         self.office = None
+
+    def __str__(self) -> str:
+        return 'Staff'
+
+

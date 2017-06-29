@@ -1,9 +1,11 @@
+import os
+
 from classes.room import Office, LivingSpace, Fellow, Staff
 from modals.table_def import OfficeModel, FellowModel, StaffModel, LivingSpaceModel
 from modals.table_def import engine
 from random import shuffle
 import click
-# from sqlalchemy import create_engine
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from typing import Union
 
@@ -247,8 +249,8 @@ class Dojo:
             text += '---------------------------------------------\n'
             occupants_list = room.occupants
             for person in occupants_list:
-                text += person.name + ', '
-            text += '\n\n'
+                text += person.name + '(' + person.__str__() + ')' + ', '
+            text += '\n\n\n'
         return text
 
     def print_un_allocations(self):
@@ -425,9 +427,11 @@ class Dojo:
         :param db: 
         :return: 
         """
-        # if db is not None:
-        #     db = db + '.db'
-        #     engine = create_engine('sqlite:///..\modals\\' + db, echo=True)
+        if os.path.exists('Dojo.db'):
+            os.remove('Dojo.db')
+        if db:
+            db = db + '.db'
+            engine = create_engine('sqlite:///..\modals\\' + db, echo=True)
 
         # create a Session
         Session = sessionmaker(bind=engine)
@@ -488,37 +492,35 @@ class Dojo:
 
         # Loads staff from the database
         for staff in session.query(StaffModel).order_by(StaffModel.id):
-            # Create new Staff Object from database details
+            # Create new Staff Object from DB staff name
             new_staff = Staff(staff.name)
-            office_id = staff.office_id
 
-            # Create new office using databsse office details
-            office = session.query(OfficeModel).filter_by(id=office_id).first()
-            office_name = office.name
-            new_office = Office(office_name)
-
+            for office in self.all_offices:
+                if office.name == staff.office:
+                    # assign office to the staff
+                    new_staff.office = office
+                    office.occupants.append(new_staff)
+                    break
             # Append new office to list of office objects
-            new_staff.office = new_office
             self.all_staff.append(new_staff)
 
         # Loads fellows from the database
         for fellow in session.query(FellowModel).order_by(FellowModel.id):
             # Create new fellow Object from database details
-            new_fellow = Fellow(fellow.name)
-            office_id = fellow.office_id
-            living_space_id = fellow.living_space_id
+            new_fellow = Fellow(fellow.name, fellow.wants_accomodation)
+            for office in self.all_offices:
+                if office.name == fellow.office:
+                    # assign office to the staff
+                    new_fellow.office = office
+                    office.occupants.append(new_fellow)
+                    break
+            self.all_fellows.append(new_fellow)
 
-            # Create new office using databsse office details
-            office = session.query(OfficeModel).filter_by(id=office_id).first()
-            office_name = office.name
-            new_office = Office(office_name)
-
-            # Create new living space using databsse office details
-            living_space = session.query(LivingSpaceModel).filter_by(id=living_space_id).first()
-            living_space_name = living_space.name
-            new_living_space = LivingSpace(living_space_name)
-
-            # Append new office to list of office objects
-            new_fellow.office = new_office
-            new_fellow.living_place = new_living_space
+            for l_space in self.all_living_spaces:
+                if l_space.name == fellow.living_space:
+                    # assign office to the staff
+                    new_fellow.living_place = l_space
+                    l_space.occupants.append(new_fellow)
+                    break
+            # Append new living_space to list of living_space objects
             self.all_fellows.append(new_fellow)
